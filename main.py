@@ -12,12 +12,8 @@ from typing import IO, Any, Callable, NamedTuple, Optional, Tuple, cast
 import feedparser
 import requests
 import yaml
-from num2words import num2words
 
-BASE_URL = "https://podcasts.peterrice.xyz"
-FILENAME_TEMPLATE = "${itemid}${extension}"
-# IndexFeed = Tuple[time.struct_time, Callable[[Any], None]]
-# Podcast = namedtuple('Podcast', ['slug', 'url', 'title'])
+
 class ParsedFeed(NamedTuple):
     feed: Any
     entries: Any
@@ -39,9 +35,15 @@ class Podcast(NamedTuple):
         return self.slug.replace("-", " ").title()
 
 
+FILENAME_TEMPLATE = "${itemid}${extension}"
+base_url: str
+
+
 def main() -> None:
     with open("podcasts.yml") as f:
-        podcasts = [Podcast(slug, url) for slug, url in yaml.safe_load(f).items()]
+        config = yaml.safe_load(f)
+        base_url = config["base_url"]
+        podcasts = [Podcast(slug, url) for slug, url in config["podcasts"].items()]
     os.chdir("/home/peter/annex/hosted-podcasts")
     index = NamedTemporaryFile(mode="w", dir=Path(), delete=False)
     print(
@@ -142,7 +144,7 @@ def relink(slug: str, feed: FeedData) -> Optional[str]:
             return None
         for link in entry.links:
             if "audio" in link.type:
-                replacements[link.href] = f"{BASE_URL}/{slug}/{entry.guid}.mp3"
+                replacements[link.href] = f"{base_url}/{slug}/{entry.guid}.mp3"
     raw = feed[0]
     for old, new in replacements.items():
         # print(f"replacing {old} with {new}")
