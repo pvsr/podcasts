@@ -159,8 +159,15 @@ def relink(slug: str, feed: FeedData) -> Optional[str]:
     return raw
 
 
-def pretty_rss(raw: str) -> Any:
-    return xml.dom.minidom.parseString(raw).toprettyxml()
+def pretty_rss(raw: str) -> xml.dom.minidom.Document:
+    return strip_cruft(xml.dom.minidom.parseString(raw)).toprettyxml()
+
+
+def strip_cruft(feed_xml: xml.dom.minidom.Document) -> xml.dom.minidom.Document:
+    for tag in CONFIG.tags_to_strip:
+        for node in feed_xml.getElementsByTagName(tag):
+            node.parentNode.removeChild(node)
+    return feed_xml
 
 
 def append_to_index(podcast: Podcast, parsed: ParsedFeed) -> IndexFeed:
