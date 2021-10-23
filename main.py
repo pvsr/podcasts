@@ -7,13 +7,14 @@ from pathlib import Path
 from shutil import move
 from subprocess import run
 from tempfile import NamedTemporaryFile
-from typing import Any, Callable, IO, Iterable, NamedTuple, Optional, Tuple, cast
+from typing import IO, Any, Callable, Iterable, NamedTuple, Optional, Tuple, cast
 
 import feedparser
 import requests
 import yaml
 
 
+# wrapper around the result of feedparser.parse()
 class ParsedFeed(NamedTuple):
     feed: Any
     entries: Any
@@ -24,7 +25,7 @@ FeedData = Tuple[str, ParsedFeed]
 
 class IndexFeed(NamedTuple):
     last_ep: time.struct_time
-    write_to_index: Callable[[IO[str]], None]
+    index_entry: str
 
 
 class Podcast(NamedTuple):
@@ -72,7 +73,7 @@ def main() -> None:
         reverse=True,
     )
     for feed in feeds:
-        feed.write_to_index(index)
+        print(feed.index_entry, file=index)
     print(
         f"""
 </div>
@@ -174,19 +175,23 @@ def append_to_index(podcast: Podcast, parsed: ParsedFeed) -> IndexFeed:
     feed = parsed.feed
     last = parsed.entries[0].published_parsed
 
-    def append(index: IO[str]) -> None:
-        print("<div>", file=index)
-        if feed.image and feed.image.href:
-            print(f"<img src='{feed.image.href}' alt='{feed.image.title}'>", file=index)
+    image = (
+        f"\n<img src='{feed.image.href}' alt='{feed.image.title}'>"
+        if feed.image and feed.image.href
+        else None
+    )
 
-        print("<div>", file=index)
-        print(f"<h1>{podcast.title() or feed.title}</h1>", file=index)
-        print(f"<h2>latest episode: {month_day(last)}{year(last)}</h2>", file=index)
-        print(f"<p><a href='{podcast.slug}.rss'>RSS feed</a></p>", file=index)
-        print("</div>", file=index)
-        print("</div>", file=index)
+    index_entry = f"""
+    <div>{image}
+      <div>
+        <h1>{podcast.title() or feed.title}</h1>
+        <h2>latest episode: {month_day(last)}{year(last)}</h2>
+        <p><a href='{podcast.slug}.rss'>RSS feed</a></p>
+      </div>
+    </div>
+    """
 
-    return IndexFeed(last, append)
+    return IndexFeed(last, index_entry)
 
 
 def month_day(t: time.struct_time = time.localtime()) -> str:
