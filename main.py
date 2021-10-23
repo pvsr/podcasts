@@ -87,7 +87,7 @@ def main() -> None:
 
 def process_feed(podcast: Podcast) -> Optional[IndexFeed]:
     old = Path(f"{podcast.slug}.rss")
-    old_eps = len(feedparser.parse(old).entries)
+    old_eps = len(feedparser.parse(old).entries) if old.is_file() else 0
     print(f"{podcast.slug}: downloading {podcast.url}")
     feed = download_feed(podcast)
     if not feed:
