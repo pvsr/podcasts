@@ -1,6 +1,8 @@
 html {
   font-family:Frutiger, "Frutiger Linotype", Univers, Calibri, "Myriad Pro", Myriad, "DejaVu Sans Condensed", "Liberation Sans", "Nimbus Sans L", Tahoma, Geneva, "Helvetica Neue", Helvetica, Arial, sans-serif;
   text-align: center;
+  background: #555;
+  color: #bbb;
 }
 
 .podcasts {
@@ -13,44 +15,33 @@ html {
   /* align-content: space-between; */
 }
 
-.podcasts div {
-  flex: 0 0 60vw;
+.podcasts > div {
+  flex: 0 0 min(65vw, 1200px);
   margin: 2% 1%;
   padding: 15px;
-  border: 2px solid #333;
+  border: 3px solid #333;
   border-radius: 20px;
   background: #eee;
+  color: #222;
 
-  display: grid;
-  /* flex-flow: row wrap; */
-  grid-template-areas:
-      "image"
-      "info"
-      "info";
-  /* max-width: 100%; */
+  display: flex;
+  flex-flow: row wrap;
   /* align-content: space-between; */
-  /* grid-template-columns: repeat(auto-fit, minmax(300px, auto)); */
-  grid-gap: 15px;
+  justify-content: space-around;
 }
 
-@media (min-width: 650px) {
-  .podcasts div {
-    grid-template-areas:
-    "image info"
-    "image info";
-  }
-}
-
-.podcasts * {
-  /* flex: 1 1 40%; */
-}
-
-.podcasts img {
-  /* flex: 0 1 min-content; */
-  grid-area: image;
-  /* grid-column: 1 / span 2; */
-  /* grid-row: 1 / span 2; */
+.podcasts > div > img {
+  flex: 0;
   max-width: 300px;
   border-radius: 7px;
   /* margin: 20px; */
+}
+
+.podcasts > div > div {
+  /* max-width: 40%; */
+  flex: 1 1 40%;
+}
+
+.podcasts > div > p {
+  font-size: 1.25rem;
 }
