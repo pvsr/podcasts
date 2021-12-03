@@ -112,7 +112,6 @@ def process_feed(podcast: Podcast) -> Optional[IndexFeed]:
                 # "--fast",
                 # "--force",
             ],
-            capture_output=True,
             check=True,
         )
     return append_to_index(podcast, feed[1])
