@@ -38,6 +38,7 @@ class Podcast(NamedTuple):
 
 class Config(NamedTuple):
     base_url: str
+    auth_url: str
     tags_to_strip: Iterable[str]
 
 
@@ -185,7 +186,7 @@ def append_to_index(podcast: Podcast, parsed: ParsedFeed) -> IndexFeed:
       <div>
         <h1>{feed.title or podcast.title()}</h1>
         <h2>latest episode: {month_day(last)}{year(last)}</h2>
-        <p><a href='{podcast.slug}.rss'>RSS feed</a></p>
+        <p><a href='{CONFIG.auth_url}/{podcast.slug}.rss'>RSS feed</a></p>
       </div>
     </div>
     """
