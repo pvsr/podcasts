@@ -184,7 +184,7 @@ def append_to_index(podcast: Podcast, parsed: ParsedFeed) -> IndexFeed:
     index_entry = f"""
     <div>{image}
       <div>
-        <h1>{podcast.title() or feed.title}</h1>
+        <h1>{feed.title or podcast.title()}</h1>
         <h2>latest episode: {month_day(last)}{year(last)}</h2>
         <p><a href='{podcast.slug}.rss'>RSS feed</a></p>
       </div>
