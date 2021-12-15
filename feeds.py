@@ -1,5 +1,6 @@
 import html
 import os
+import string
 import time
 import xml.dom.minidom
 from operator import attrgetter
@@ -152,12 +153,52 @@ def relink(slug: str, feed: FeedData) -> Optional[str]:
             return None
         for link in entry.links:
             if "audio" in link.type:
-                replacements[link.href] = f"{CONFIG.base_url}/{slug}/{entry.guid}.mp3"
+                filename = git_annex_sanitize_filename(entry.guid)
+                replacements[link.href] = f"{CONFIG.base_url}/{slug}/{filename}.mp3"
     raw = feed[0]
     for old, new in replacements.items():
         # print(f"replacing {old} with {new}")
         raw = raw.replace(html.escape(old), new)
     return raw
+
+
+def git_annex_sanitize_filename(filename: str) -> str:
+    if not filename:
+        return filename
+    return "".join(sanitize_char(c) for c in filename)
+
+
+def sanitize_char(char: str) -> str:
+    # todo
+    if char in [".", "-"]:
+        return char
+    if char in string.punctuation or char in string.whitespace:
+        return "_"
+    else:
+        return char
+
+
+# sanitizeFilePath :: String -> FilePath
+# sanitizeFilePath = sanitizeLeadingFilePathCharacter . sanitizeFilePathComponent
+
+# {- For when the filepath is being built up out of components that should be
+#  - individually sanitized, this can be used for each component, followed by
+#  - sanitizeLeadingFilePathCharacter for the whole thing.
+#  -}
+# sanitizeFilePathComponent :: String -> String
+# sanitizeFilePathComponent = map sanitize
+#   where
+# 	sanitize c
+# 		| c == '.' || c == '-' = c
+# 		| isSpace c || isPunctuation c || isSymbol c || isControl c || c == '/' = '_'
+# 		| otherwise = c
+
+# sanitizeLeadingFilePathCharacter :: String -> FilePath
+# sanitizeLeadingFilePathCharacter [] = "file"
+# sanitizeLeadingFilePathCharacter ('.':s) = '_':s
+# sanitizeLeadingFilePathCharacter ('-':s) = '_':s
+# sanitizeLeadingFilePathCharacter ('/':s) = '_':s
+# sanitizeLeadingFilePathCharacter s = s
 
 
 def pretty_rss(raw: str) -> xml.dom.minidom.Document:
