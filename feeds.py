@@ -12,6 +12,7 @@ from typing import IO, Any, Callable, Iterable, NamedTuple, Optional, Tuple, cas
 
 import feedparser
 import requests
+import requests_cache
 import yaml
 
 
@@ -48,6 +49,7 @@ FILENAME_TEMPLATE = "${itemid}${extension}"
 
 
 def main() -> None:
+    requests_cache.install_cache("podcasts", backend="filesystem", use_cache_dir=True)
     with open("podcasts.yml") as f:
         config = yaml.safe_load(f)
         podcasts = [Podcast(slug, url) for slug, url in config["podcasts"].items()]

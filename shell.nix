@@ -8,6 +8,7 @@ mkShell {
       black
 
       requests
+      requests-cache
       feedparser
       num2words
       pyyaml
