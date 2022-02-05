@@ -92,7 +92,6 @@ def main() -> None:
 def process_feed(podcast: Podcast) -> Optional[IndexFeed]:
     old = Path(f"{podcast.slug}.rss")
     old_eps = len(feedparser.parse(old).entries) if old.is_file() else 0
-    print(f"{podcast.slug}: downloading {podcast.url}")
     feed = download_feed(podcast)
     if not feed:
         print(f"{podcast.slug}: couldn't download {podcast.url}, continuing")
@@ -122,10 +121,14 @@ def process_feed(podcast: Podcast) -> Optional[IndexFeed]:
 
 
 def download_feed(podcast: Podcast) -> Optional[FeedData]:
+    print(f"{podcast.slug}: downloading", end="")
     r = requests.get(podcast.url)
     if r.status_code != 200:
-        print(f"{podcast.slug}: failed to fetch {podcast.url}")
+        print(" failed")
         return None
+    if r.from_cache:
+        print(": cache hit", end="")
+    print()
 
     parsed = cast(ParsedFeed, feedparser.parse(r.text))
     if len(parsed.entries) == 0:
