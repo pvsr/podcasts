@@ -126,7 +126,7 @@ def download_feed(podcast: Podcast) -> Optional[FeedData]:
     if r.status_code != 200:
         print(" failed")
         return None
-    if r.from_cache:
+    if getattr(r, "from_cache", False):
         print(": cache hit", end="")
     print()
 
