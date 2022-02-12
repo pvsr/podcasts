@@ -3,6 +3,7 @@ import os
 import string
 import time
 import xml.dom.minidom
+from datetime import timedelta
 from operator import attrgetter
 from pathlib import Path
 from shutil import move
@@ -49,7 +50,13 @@ FILENAME_TEMPLATE = "${itemid}${extension}"
 
 
 def main() -> None:
-    requests_cache.install_cache("podcasts", backend="filesystem", use_cache_dir=True)
+    requests_cache.install_cache(
+        "podcasts",
+        backend="filesystem",
+        use_cache_dir=True,
+        cache_control=True,
+        expire_after=timedelta(days=1),
+    )
     with open("podcasts.yml") as f:
         config = yaml.safe_load(f)
         podcasts = [Podcast(slug, url) for slug, url in config["podcasts"].items()]
