@@ -1,3 +1,4 @@
+import asyncio
 import html
 import os
 import string
@@ -51,7 +52,7 @@ CONFIG: Config
 FILENAME_TEMPLATE = "${itemid}${extension}"
 
 
-def main() -> None:
+async def main() -> None:
     # requests_cache.install_cache(
     #     "podcasts",
     #     backend="filesystem",
@@ -80,8 +81,12 @@ def main() -> None:
 <div class="podcasts">""",
         file=index,
     )
+
+    parsed_feeds = await asyncio.gather(
+        *[asyncio.to_thread(process_feed, podcast) for podcast in podcasts]
+    )
     feeds = sorted(
-        filter(None, map(process_feed, podcasts)),
+        filter(None, parsed_feeds),
         key=attrgetter("last_ep"),
         reverse=True,
     )
@@ -130,14 +135,13 @@ def process_feed(podcast: Podcast) -> Optional[IndexFeed]:
 
 
 def download_feed(podcast: Podcast) -> Optional[FeedData]:
-    print(f"{podcast.slug}: downloading", end="")
+    print(f"{podcast.slug}: downloading")
     r = requests.get(podcast.url)
     if r.status_code != 200:
-        print(" failed")
+        print(f"{podcast.slug}: failed")
         return None
     if getattr(r, "from_cache", False):
-        print(": cache hit", end="")
-    print()
+        print(f"{podcast.slug}: cache hit")
 
     parsed = cast(ParsedFeed, feedparser.parse(r.text))
     if len(parsed.entries) == 0:
@@ -275,4 +279,4 @@ def year(t: Optional[time.struct_time] = None) -> str:
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
