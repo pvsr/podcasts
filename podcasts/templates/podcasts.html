@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{{ url_for("static", filename="styles.css") }}">
+  </head>
+  <body>
+    <div class="podcasts">
+      {% for podcast in podcasts %}
+      <div>{ podcast.image }
+        <div>
+          <h1>{{ podcast.title }}</h1>
+          <h2>latest episode: {{ podcast.last_ep }}</h2>
+          <p><a href='{{ base_url }}/{{ podcast.slug }}.rss'>RSS feed</a></p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    <h2>Updated: {{ updated }}</h2>
+  </body>
+</html>
