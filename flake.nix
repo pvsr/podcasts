@@ -13,24 +13,34 @@
           preferWheels = true;
         };
       in
-      {
+      rec {
 
         devShell = pkgs.mkShell {
           buildInputs = [
             pkgs.python3Packages.poetry
+            pkgs.sqlite
             devEnv
           ];
         };
 
-        defaultPackage = pkgs.poetry2nix.mkPoetryApplication {
-          projectDir = ./.;
-          preferWheels = true;
+        packages = {
+          fetch-podcasts = pkgs.poetry2nix.mkPoetryApplication {
+            projectDir = ./.;
+            preferWheels = true;
+          };
         };
 
-        defaultApp = utils.lib.mkApp {
-          drv = self.defaultPackage."${system}";
+        defaultPackage = packages.fetch-podcasts;
+
+        apps = {
+          fetch-podcasts = utils.lib.mkApp {
+            drv = packages.fetch-podcasts;
+            exePath = "/bin/fetch-podcasts";
+          };
         };
 
-      }; in with utils.lib; eachSystem defaultSystems out;
+        defaultApp = apps.fetch-podcasts;
+      };
+    in with utils.lib; eachSystem defaultSystems out;
 
 }
