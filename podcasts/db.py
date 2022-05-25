@@ -1,11 +1,11 @@
 from sqlalchemy import (
     Column,
     DateTime,
+    ForeignKey,
     Integer,
     MetaData,
     String,
     Table,
-    ForeignKey,
     create_engine,
 )
 from sqlalchemy.orm import declarative_base, relationship
