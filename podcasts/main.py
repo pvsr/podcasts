@@ -52,7 +52,7 @@ CONFIG: Config
 FILENAME_TEMPLATE = "${itemid}${extension}"
 
 
-async def main() -> None:
+async def fetch_feeds() -> None:
     # requests_cache.install_cache(
     #     "podcasts",
     #     backend="filesystem",
@@ -278,5 +278,9 @@ def year(t: Optional[time.struct_time] = None) -> str:
     return "" if t.tm_year == local.tm_year else f" {t.tm_year % 2000}"
 
 
+def main():
+    asyncio.run(fetch_feeds())
+
+
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
