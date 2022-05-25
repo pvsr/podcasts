@@ -11,12 +11,12 @@ from pathlib import Path
 from shutil import move
 from subprocess import run
 from tempfile import NamedTemporaryFile
-from typing import IO, Any, Callable, Iterable, NamedTuple, Optional, Tuple, cast
+from typing import Any, Iterable, NamedTuple, Optional, cast
 
 import feedparser
 import requests
 import yaml
-from sqlalchemy import MetaData, create_engine, text
+from sqlalchemy import text
 from sqlalchemy.dialects.sqlite import insert
 from sqlalchemy.orm import Session
 
@@ -338,7 +338,6 @@ def append_to_index(podcast: Podcast, parsed: ParsedFeed) -> IndexFeed:
 
 def to_datetime(t: time.struct_time) -> datetime:
     return datetime.fromtimestamp(time.mktime(t))
-    return
 
 
 def month_day(t: time.struct_time = time.localtime()) -> str:
