@@ -48,6 +48,7 @@ class Config(NamedTuple):
 
 CONFIG: Config
 FILENAME_TEMPLATE = "${itemid}${extension}"
+WRITE_INDEX = False
 
 
 async def fetch_feeds() -> None:
@@ -58,7 +59,9 @@ async def fetch_feeds() -> None:
         global CONFIG
         CONFIG = Config(**config)
     os.chdir("/home/peter/annex/hosted-podcasts")
-    index = NamedTemporaryFile(mode="w", dir=Path(), delete=False)
+    index = NamedTemporaryFile(
+        mode="w", dir=Path() if WRITE_INDEX else None, delete=False
+    )
     print(
         """
 <!doctype html>
@@ -91,7 +94,8 @@ async def fetch_feeds() -> None:
 </html>""",
         file=index,
     )
-    move(index.name, Path("index.html"))
+    if WRITE_INDEX:
+        move(index.name, Path("index.html"))
 
 
 def process_feed(podcast: Podcast) -> Optional[IndexFeed]:
