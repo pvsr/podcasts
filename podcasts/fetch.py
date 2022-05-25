@@ -204,7 +204,7 @@ def process_feed(
             f"{podcast.slug}: we have {old_eps} while remote has {new_eps}, continuing"
         )
     else:
-        update_feed(podcast.slug, feed)
+        # update_feed(podcast.slug, feed)
         print(f"{podcast.slug}: annexing {podcast.url}")
         run(
             [
