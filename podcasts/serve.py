@@ -1,5 +1,5 @@
 from flask import Flask, render_template
-from sqlalchemy import select, desc
+from sqlalchemy import desc, select
 from sqlalchemy.orm import Session
 
 from podcasts import db
