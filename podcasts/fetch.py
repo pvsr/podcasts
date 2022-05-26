@@ -134,6 +134,8 @@ async def fetch_feeds(session) -> None:
         PodcastDb(
             slug=feed.slug,
             title=feed.parsed.feed.title,
+            image=feed.parsed.feed.image.href,
+            image_title=feed.parsed.feed.image.title,
             last_ep=feed.last_ep,
             last_fetch=datetime.now(),
             episodes=[
@@ -338,31 +340,6 @@ def append_to_index(podcast: Podcast, parsed: ParsedFeed) -> IndexFeed:
 
 def to_datetime(t: time.struct_time) -> datetime:
     return datetime.fromtimestamp(time.mktime(t))
-
-
-def month_day(t: time.struct_time = time.localtime()) -> str:
-    day = f"{t.tm_mday}{month_day_suffix(t.tm_mday)}"
-    return time.strftime(f"%b {day}", t)
-
-
-def month_day_suffix(day: int) -> str:
-    if day in (11, 12, 13):
-        return "th"
-
-    lsd = day % 10
-    if lsd == 1:
-        return "st"
-    if lsd == 2:
-        return "nd"
-    if lsd == 3:
-        return "rd"
-    return "th"
-
-
-def year(t: Optional[time.struct_time] = None) -> str:
-    local = time.localtime()
-    t = t or local
-    return "" if t.tm_year == local.tm_year else f" {t.tm_year % 2000}"
 
 
 def main():

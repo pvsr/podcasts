@@ -10,9 +10,7 @@ html {
 
   display: flex;
   flex-flow: row wrap;
-  /* align-items: flex-start; */
   justify-content: space-around;
-  /* align-content: space-between; */
 }
 
 .podcasts > div {
@@ -26,7 +24,6 @@ html {
 
   display: flex;
   flex-flow: row wrap;
-  /* align-content: space-between; */
   justify-content: space-around;
 }
 
@@ -34,14 +31,12 @@ html {
   flex: 0;
   max-width: 300px;
   border-radius: 7px;
-  /* margin: 20px; */
 }
 
 .podcasts > div > div {
-  /* max-width: 40%; */
   flex: 1 1 40%;
 }
 
-.podcasts > div > p {
+.podcasts > div > div > p {
   font-size: 1.25rem;
 }

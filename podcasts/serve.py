@@ -1,9 +1,9 @@
-from flask import Flask, render_template, url_for
-from sqlalchemy import select
+from flask import Flask, render_template
+from sqlalchemy import select, desc
 from sqlalchemy.orm import Session
 
 from podcasts import db
-from podcasts.db import PodcastDb, EpisodeDb
+from podcasts.db import PodcastDb
 
 app = Flask(__name__)
 
@@ -12,7 +12,9 @@ app = Flask(__name__)
 def home():
     engine = db.create()
     with Session(engine) as session:
-        podcasts = session.execute(select(PodcastDb))
+        podcasts = session.scalars(
+            select(PodcastDb).order_by(desc(PodcastDb.last_ep))
+        ).all()
         return render_template(
             "podcasts.html", podcasts=podcasts, updated="todo", base_url="todo"
         )
