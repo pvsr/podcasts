@@ -3,15 +3,6 @@ from datetime import datetime
 from sqlalchemy import Column, DateTime, ForeignKey, String, create_engine
 from sqlalchemy.orm import declarative_base, relationship
 
-
-def eng():
-    return create_engine(
-        "sqlite:///podcasts.sqlite",
-        echo=True,
-        future=True,
-    )
-
-
 Base = declarative_base()
 
 
@@ -48,8 +39,12 @@ class EpisodeDb(Base):
     podcast = relationship("PodcastDb", back_populates="episodes")
 
 
-def create():
-    engine = eng()
+def create_database():
+    engine = create_engine(
+        "sqlite:///podcasts.sqlite",
+        echo=True,
+        future=True,
+    )
     Base.metadata.create_all(engine)
     return engine
 

@@ -18,8 +18,7 @@ from sqlalchemy import text
 from sqlalchemy.dialects.sqlite import insert
 from sqlalchemy.orm import Session
 
-from podcasts import db
-from podcasts.db import EpisodeDb, PodcastDb
+from podcasts.db import EpisodeDb, PodcastDb, create_database
 
 
 # wrapper around the result of feedparser.parse()
@@ -286,7 +285,7 @@ def to_datetime(t: time.struct_time) -> datetime:
 
 
 def main():
-    engine = db.create()
+    engine = create_database()
     with Session(engine) as session:
         asyncio.run(fetch_feeds(session))
         session.commit()

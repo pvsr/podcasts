@@ -2,15 +2,14 @@ from flask import Flask, render_template
 from sqlalchemy import desc, select
 from sqlalchemy.orm import Session
 
-from podcasts import db
-from podcasts.db import PodcastDb
+from podcasts.db import PodcastDb, create_database
 
 app = Flask(__name__)
 
 
 @app.route("/")
 def home():
-    engine = db.create()
+    engine = create_database()
     with Session(engine) as session:
         podcasts = session.scalars(
             select(PodcastDb).order_by(desc(PodcastDb.last_ep))
