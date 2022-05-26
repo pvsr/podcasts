@@ -8,9 +8,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from operator import attrgetter
 from pathlib import Path
-from shutil import move
 from subprocess import run
-from tempfile import NamedTemporaryFile
 from typing import Any, Iterable, NamedTuple, Optional, cast
 
 import feedparser
@@ -50,11 +48,6 @@ class FeedData:
         )
 
 
-class IndexFeed(NamedTuple):
-    last_ep: time.struct_time
-    index_entry: str
-
-
 class Podcast(NamedTuple):
     slug: str
     url: str
@@ -82,22 +75,6 @@ async def fetch_feeds(session) -> None:
         global CONFIG
         CONFIG = Config(**config)
     os.chdir("/home/peter/annex/hosted-podcasts")
-    index = NamedTemporaryFile(
-        mode="w", dir=Path() if WRITE_INDEX else None, delete=False
-    )
-    print(
-        """
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="styles.css">
-</head>
-<body>
-<div class="podcasts">""",
-        file=index,
-    )
 
     last = {
         row.slug: {
@@ -176,16 +153,6 @@ async def fetch_feeds(session) -> None:
         [vars(episode) for podcast in podcasts for episode in podcast.episodes],
     )
     session.commit()
-    print(
-        f"""
-</div>
-<h2>Updated: {time.strftime(f"{month_day()} %H:%M")}</h2>
-</body>
-</html>""",
-        file=index,
-    )
-    if WRITE_INDEX:
-        move(index.name, Path("index.html"))
 
 
 def process_feed(
@@ -277,8 +244,7 @@ def sanitize_char(char: str) -> str:
         return char
     if char in string.punctuation or char in string.whitespace:
         return "_"
-    else:
-        return char
+    return char
 
 
 # sanitizeFilePath :: String -> FilePath
@@ -313,29 +279,6 @@ def strip_cruft(feed_xml: xml.dom.minidom.Document) -> xml.dom.minidom.Document:
         for node in feed_xml.getElementsByTagName(tag):
             node.parentNode.removeChild(node)
     return feed_xml
-
-
-def append_to_index(podcast: Podcast, parsed: ParsedFeed) -> IndexFeed:
-    feed = parsed.feed
-    last = parsed.entries[0].published_parsed
-
-    image = (
-        f"\n<img src='{feed.image.href}' alt='{feed.image.title}'>"
-        if feed.image and feed.image.href
-        else None
-    )
-
-    index_entry = f"""
-    <div>{image}
-      <div>
-        <h1>{feed.title or podcast.title()}</h1>
-        <h2>latest episode: {month_day(last)}{year(last)}</h2>
-        <p><a href='{CONFIG.auth_url}/{podcast.slug}.rss'>RSS feed</a></p>
-      </div>
-    </div>
-    """
-
-    return IndexFeed(last, index_entry)
 
 
 def to_datetime(t: time.struct_time) -> datetime:
