@@ -86,6 +86,7 @@ async def fetch_feeds(session) -> None:
     )
     if len(feeds) == 0:
         return
+    last_fetch = datetime.now()
     podcasts = [
         PodcastDb(
             slug=feed.slug,
@@ -93,7 +94,7 @@ async def fetch_feeds(session) -> None:
             image=feed.parsed.feed.image.href,
             image_title=feed.parsed.feed.image.title,
             last_ep=feed.last_ep,
-            last_fetch=datetime.now(),
+            last_fetch=last_fetch,
             episodes=[
                 EpisodeDb(
                     podcast_slug=feed.slug,
@@ -114,20 +115,17 @@ async def fetch_feeds(session) -> None:
     insert_stmt = insert(PodcastDb)
     session.execute(
         insert_stmt.on_conflict_do_update(
-            set_=dict(last_ep=insert_stmt.excluded.last_ep)
+            set_={col: insert_stmt.excluded[col] for col in ["last_ep", "last_fetch"]}
         ),
         [vars(podcast) for podcast in podcasts],
     )
     insert_stmt = insert(EpisodeDb)
     session.execute(
         insert_stmt.on_conflict_do_update(
-            set_=dict(
-                title=insert_stmt.excluded.title,
-                description=insert_stmt.excluded.description,
-                published=insert_stmt.excluded.published,
-                link=insert_stmt.excluded.link,
-                enclosure=insert_stmt.excluded.enclosure,
-            )
+            set_={
+                col: insert_stmt.excluded[col]
+                for col in ["title", "description", "published", "link", "enclosure"]
+            }
         ),
         [vars(episode) for podcast in podcasts for episode in podcast.episodes],
     )
@@ -149,7 +147,7 @@ def process_feed(
     new_eps = len(feed.parsed.entries)
     if len(feed.parsed.entries) <= old_eps:
         print(
-            f"{podcast.slug}: we have {old_eps} while remote has {new_eps}, continuing"
+            f"{podcast.slug}: we have {old_eps} while remote has {new_eps}, skipping import"
         )
     else:
         update_feed(podcast.slug, feed)
