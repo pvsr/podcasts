@@ -9,20 +9,21 @@ from datetime import datetime, timedelta
 from operator import attrgetter
 from pathlib import Path
 from subprocess import run
-from typing import Any, Iterable, NamedTuple, Optional, cast
+from typing import Any, Optional, cast
 
 import feedparser
 import requests
-import yaml
 from sqlalchemy import text
 from sqlalchemy.dialects.sqlite import insert
 from sqlalchemy.orm import Session
 
+from podcasts.config import Podcast, load_config
 from podcasts.db import EpisodeDb, PodcastDb, create_database
 
 
 # wrapper around the result of feedparser.parse()
-class ParsedFeed(NamedTuple):
+@dataclass
+class ParsedFeed:
     feed: Any
     entries: Any
 
@@ -47,32 +48,11 @@ class FeedData:
         )
 
 
-class Podcast(NamedTuple):
-    slug: str
-    url: str
-
-    def title(self) -> str:
-        return self.slug.replace("-", " ").title()
-
-
-class Config(NamedTuple):
-    base_url: str
-    auth_url: str
-    tags_to_strip: Iterable[str]
-
-
-CONFIG: Config
 FILENAME_TEMPLATE = "${itemid}${extension}"
-WRITE_INDEX = False
 
 
 async def fetch_feeds(session) -> None:
-    with open("podcasts.yml") as f:
-        config = yaml.safe_load(f)
-        podcasts = [Podcast(slug, url) for slug, url in config["podcasts"].items()]
-        del config["podcasts"]
-        global CONFIG
-        CONFIG = Config(**config)
+    config = load_config()
     os.chdir("/home/peter/annex/hosted-podcasts")
 
     last = {
@@ -96,7 +76,7 @@ async def fetch_feeds(session) -> None:
                 podcast,
                 **last.get(podcast.slug, {"old_eps": 0, "last_fetch": None}),
             )
-            for podcast in podcasts
+            for podcast in config.podcasts
         ]
     )
     feeds = sorted(
@@ -223,7 +203,9 @@ def relink(slug: str, feed: FeedData) -> Optional[str]:
         for link in entry.links:
             if "audio" in link.type:
                 filename = git_annex_sanitize_filename(entry.guid)
-                replacements[link.href] = f"{CONFIG.base_url}/{slug}/{filename}.mp3"
+                replacements[
+                    link.href
+                ] = f"{load_config().base_url}/{slug}/{filename}.mp3"
     raw = feed.raw
     for old, new in replacements.items():
         # print(f"replacing {old} with {new}")
@@ -274,7 +256,7 @@ def pretty_rss(raw: str) -> xml.dom.minidom.Document:
 
 
 def strip_cruft(feed_xml: xml.dom.minidom.Document) -> xml.dom.minidom.Document:
-    for tag in CONFIG.tags_to_strip:
+    for tag in load_config().tags_to_strip:
         for node in feed_xml.getElementsByTagName(tag):
             node.parentNode.removeChild(node)
     return feed_xml

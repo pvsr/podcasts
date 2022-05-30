@@ -72,6 +72,17 @@ optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
 [[package]]
+name = "dacite"
+version = "1.6.0"
+description = "Simple creation of data classes from dictionaries."
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[package.extras]
+dev = ["pytest (>=5)", "pytest-cov", "coveralls", "black", "mypy", "pylint"]
+
+[[package]]
 name = "dill"
 version = "0.3.5.1"
 description = "serialize all of python"
@@ -443,7 +454,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "ca65857dcf57fd4501ae77b37d875a67675703d0300c4bbf66fed6e719bf666b"
+content-hash = "97980f206d8d895aa6bb24118bc2221d2f3820437a3ffbf354cb1d5a9156903b"
 
 [metadata.files]
 astroid = [
@@ -490,6 +501,10 @@ click = [
 colorama = [
     {file = "colorama-0.4.4-py2.py3-none-any.whl", hash = "sha256:9f47eda37229f68eee03b24b9748937c7dc3868f906e8ba69fbcbdd3bc5dc3e2"},
     {file = "colorama-0.4.4.tar.gz", hash = "sha256:5941b2b48a20143d2267e95b1c2a7603ce057ee39fd88e7329b0c292aa16869b"},
+]
+dacite = [
+    {file = "dacite-1.6.0-py3-none-any.whl", hash = "sha256:4331535f7aabb505c732fa4c3c094313fc0a1d5ea19907bf4726a7819a68b93f"},
+    {file = "dacite-1.6.0.tar.gz", hash = "sha256:d48125ed0a0352d3de9f493bf980038088f45f3f9d7498f090b50a847daaa6df"},
 ]
 dill = [
     {file = "dill-0.3.5.1-py2.py3-none-any.whl", hash = "sha256:33501d03270bbe410c72639b350e941882a8b0fd55357580fbc873fba0c59302"},

@@ -11,6 +11,7 @@ feedparser = "^6.0.10"
 PyYAML = "^6.0"
 SQLAlchemy = {extras = ["sqlite"], version = "^1.4.36"}
 Flask = "^2.1.2"
+dacite = "^1.6.0"
 
 [tool.poetry.dev-dependencies]
 mypy = "^0.960"
