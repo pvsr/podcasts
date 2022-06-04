@@ -93,7 +93,9 @@ def main() -> None:
 </html>""",
         file=index,
     )
-    move(index.name, Path("index.html"))
+    index_dest = Path("index.html")
+    move(index.name, index_dest)
+    index_dest.chmod(0o644)
 
 
 def process_feed(podcast: Podcast) -> Optional[IndexFeed]:
