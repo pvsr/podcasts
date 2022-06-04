@@ -42,7 +42,6 @@ class EpisodeDb(Base):
 def create_database():
     engine = create_engine(
         "sqlite:///podcasts.sqlite",
-        echo=True,
         future=True,
     )
     Base.metadata.create_all(engine)
