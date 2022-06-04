@@ -1,3 +1,4 @@
+import argparse
 import asyncio
 import html
 import os
@@ -51,9 +52,9 @@ class FeedData:
 FILENAME_TEMPLATE = "${itemid}${extension}"
 
 
-async def fetch_feeds(session) -> None:
+async def fetch_feeds(session, annex_dir: Path) -> None:
     config = load_config()
-    os.chdir("/home/peter/annex/hosted-podcasts")
+    os.chdir(annex_dir)
 
     last = {
         row.slug: {
@@ -265,9 +266,14 @@ def to_datetime(t: time.struct_time) -> datetime:
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "annex_dir", metavar="DIR", type=Path, help="git-annex directory"
+    )
+    args = parser.parse_args()
     engine = create_database()
     with Session(engine) as session:
-        asyncio.run(fetch_feeds(session))
+        asyncio.run(fetch_feeds(session, args.annex_dir))
         session.commit()
 
 
