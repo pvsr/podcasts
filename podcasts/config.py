@@ -22,11 +22,17 @@ class Config:
     auth_url: str
     tags_to_strip: list[str]
     podcasts: list[Podcast]
+    _instance: Optional["Config"] = None
+
+    @classmethod
+    def load(cls, data_dir: Path = Path(".")) -> "Config":
+        if not cls._instance:
+            cls._instance = open_config(data_dir)
+        return cls._instance
 
 
-@cache
-def load_config(file: Path = Path("podcasts.yml")) -> Config:
-    with open(file) as f:
+def open_config(data_dir: Path) -> Config:
+    with open(data_dir / "podcasts.yml") as f:
         return dacite.from_dict(
             Config,
             yaml.safe_load(f),

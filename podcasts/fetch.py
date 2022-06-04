@@ -18,7 +18,7 @@ from sqlalchemy import text
 from sqlalchemy.dialects.sqlite import insert
 from sqlalchemy.orm import Session
 
-from podcasts.config import Podcast, load_config
+from podcasts.config import Config, Podcast
 from podcasts.db import EpisodeDb, PodcastDb, create_database
 
 
@@ -53,7 +53,7 @@ FILENAME_TEMPLATE = "${itemid}${extension}"
 
 
 async def fetch_feeds(session, annex_dir: Path) -> None:
-    config = load_config()
+    config = Config.load()
     os.chdir(annex_dir)
 
     last = {
@@ -204,7 +204,7 @@ def relink(slug: str, feed: FeedData) -> Optional[str]:
                 filename = git_annex_sanitize_filename(entry.guid)
                 replacements[
                     link.href
-                ] = f"{load_config().base_url}/{slug}/{filename}.mp3"
+                ] = f"{Config.load().base_url}/{slug}/{filename}.mp3"
     raw = feed.raw
     for old, new in replacements.items():
         # print(f"replacing {old} with {new}")
@@ -255,7 +255,7 @@ def pretty_rss(raw: str) -> xml.dom.minidom.Document:
 
 
 def strip_cruft(feed_xml: xml.dom.minidom.Document) -> xml.dom.minidom.Document:
-    for tag in load_config().tags_to_strip:
+    for tag in Config.load().tags_to_strip:
         for node in feed_xml.getElementsByTagName(tag):
             node.parentNode.removeChild(node)
     return feed_xml
@@ -270,8 +270,10 @@ def main():
     parser.add_argument(
         "annex_dir", metavar="DIR", type=Path, help="git-annex directory"
     )
+    parser.add_argument("data_dir", metavar="DIR", type=Path, help="database directory")
     args = parser.parse_args()
-    engine = create_database()
+    engine = create_database(args.data_dir)
+    Config.load(args.data_dir)
     with Session(engine) as session:
         asyncio.run(fetch_feeds(session, args.annex_dir))
         session.commit()

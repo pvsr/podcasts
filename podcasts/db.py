@@ -1,4 +1,5 @@
 from datetime import datetime
+from pathlib import Path
 
 from sqlalchemy import Column, DateTime, ForeignKey, String, create_engine
 from sqlalchemy.orm import declarative_base, relationship
@@ -39,9 +40,9 @@ class EpisodeDb(Base):
     podcast = relationship("PodcastDb", back_populates="episodes")
 
 
-def create_database():
+def create_database(data_dir: Path):
     engine = create_engine(
-        "sqlite:///podcasts.sqlite",
+        f"sqlite:///{data_dir}/podcasts.sqlite",
         future=True,
     )
     Base.metadata.create_all(engine)
