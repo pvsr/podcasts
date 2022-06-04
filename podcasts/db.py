@@ -1,5 +1,8 @@
 from datetime import datetime
+from os import environ
 from pathlib import Path
+from sys import exit
+from typing import Optional
 
 from sqlalchemy import Column, DateTime, ForeignKey, String, create_engine
 from sqlalchemy.orm import declarative_base, relationship
@@ -40,7 +43,12 @@ class EpisodeDb(Base):
     podcast = relationship("PodcastDb", back_populates="episodes")
 
 
-def create_database(data_dir: Path):
+def create_database(data_dir: Optional[Path] = None):
+    if data_dir is None:
+        data_dir = environ["PODCASTS_DATA_DIR"]
+        if not data_dir:
+            print("could not find data dir")
+            exit(1)
     engine = create_engine(
         f"sqlite:///{data_dir}/podcasts.sqlite",
         future=True,
