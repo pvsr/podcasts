@@ -40,6 +40,37 @@
         };
 
         defaultApp = apps.fetch-podcasts;
+
+        nixosModule = { config, lib, pkgs, ... }:
+          let
+            cfg = config.services.podcasts;
+            fetch-podcasts = self.outputs.packages."${pkgs.system}".fetch-podcasts;
+          in
+          {
+            options = {
+              services.podcasts = with lib; {
+                enable = mkEnableOption "fetch-podcasts";
+                annexDir = mkOption {
+                  type = types.str;
+                };
+                dataDir = mkOption {
+                  type = types.str;
+                };
+              };
+            };
+            config = lib.mkIf cfg.enable {
+              systemd.services.podcasts = {
+                enable = true;
+                script = "${fetch-podcasts}/bin/fetch-podcasts ${cfg.annexDir} ${cfg.dataDir}";
+                serviceConfig = {
+                  Type = "oneshot";
+                  # TODO
+                  User = "peter";
+                };
+                startAt = "daily";
+              };
+            };
+          };
       };
     in with utils.lib; eachSystem defaultSystems out;
 
