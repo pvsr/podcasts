@@ -4,39 +4,48 @@
     utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs, utils }:
-    let out = system:
-      let
-        pkgs = nixpkgs.legacyPackages."${system}";
-        devEnv = pkgs.poetry2nix.mkPoetryEnv {
-          projectDir = ./.;
-          preferWheels = true;
-        };
-      in
-      rec {
-
-        devShells.default = pkgs.mkShell {
-          buildInputs = [
-            pkgs.python3Packages.poetry
-            pkgs.sqlite
-            devEnv
-          ];
-        };
-
-        packages.default = pkgs.poetry2nix.mkPoetryApplication {
-          projectDir = ./.;
-          preferWheels = true;
-        };
-
-        apps.default = utils.lib.mkApp {
-          drv = packages.podcasts;
-          exePath = "/bin/fetch-podcasts";
-        };
+  outputs = {
+    self,
+    nixpkgs,
+    utils,
+  }: let
+    out = system: let
+      pkgs = nixpkgs.legacyPackages."${system}";
+      devEnv = pkgs.poetry2nix.mkPoetryEnv {
+        projectDir = ./.;
+        preferWheels = true;
       };
-    in
-    with utils.lib; eachSystem defaultSystems out // {
-      nixosModules.default = { config, lib, pkgs, ... }:
-        let
+    in rec {
+      devShells.default = pkgs.mkShell {
+        buildInputs = [
+          pkgs.python3Packages.poetry
+          pkgs.sqlite
+          devEnv
+        ];
+      };
+
+      packages.default = pkgs.poetry2nix.mkPoetryApplication {
+        projectDir = ./.;
+        preferWheels = true;
+      };
+
+      apps.default = utils.lib.mkApp {
+        drv = packages.podcasts;
+        exePath = "/bin/fetch-podcasts";
+      };
+
+      formatter = pkgs.alejandra;
+    };
+  in
+    with utils.lib;
+      eachSystem defaultSystems out
+      // {
+        nixosModules.default = {
+          config,
+          lib,
+          pkgs,
+          ...
+        }: let
           cfg = config.services.podcasts;
           podcasts = self.outputs.packages."${pkgs.system}".default;
           penv = podcasts.dependencyEnv;
@@ -50,8 +59,7 @@
             WorkingDirectory = cfg.podcastDir;
             ProtectHome = "tmpfs";
           };
-        in
-        {
+        in {
           options = {
             services.podcasts = with lib; {
               enableFetch = mkEnableOption "fetch-podcasts";
@@ -70,32 +78,35 @@
             systemd.services.fetch-podcasts = {
               enable = cfg.enableFetch;
               script = "${fetch-podcasts} ${cfg.podcastDir} ${stateDirectory}";
-              serviceConfig = commonServiceConfig // {
-                Type = "oneshot";
-                BindPaths = [ cfg.podcastDir ];
-              };
+              serviceConfig =
+                commonServiceConfig
+                // {
+                  Type = "oneshot";
+                  BindPaths = [cfg.podcastDir];
+                };
               startAt = cfg.startAt;
             };
             systemd.services.serve-podcasts = {
               enable = cfg.enableServe;
-              serviceConfig = commonServiceConfig // {
-                BindReadOnlyPaths = [ cfg.podcastDir ];
-                # TODO get port from cfg
-                ExecStart = ''
-                  ${pkgs.python3Packages.gunicorn}/bin/gunicorn -b 0.0.0.0:5998 podcasts.serve:app
-                '';
-              };
-              environment =
-                {
-                  # TODO unify with cli args
-                  PODCASTS_ANNEX_DIR = cfg.podcastDir;
-                  PODCASTS_DATA_DIR = stateDirectory;
-                  PYTHONPATH = "${penv}/${penv.sitePackages}";
+              serviceConfig =
+                commonServiceConfig
+                // {
+                  BindReadOnlyPaths = [cfg.podcastDir];
+                  # TODO get port from cfg
+                  ExecStart = ''
+                    ${pkgs.python3Packages.gunicorn}/bin/gunicorn -b 0.0.0.0:5998 podcasts.serve:app
+                  '';
                 };
-              wantedBy = [ "multi-user.target" ];
-              after = [ "network.target" ] ++ lib.optional cfg.enableFetch "fetch-podcasts.timer";
+              environment = {
+                # TODO unify with cli args
+                PODCASTS_ANNEX_DIR = cfg.podcastDir;
+                PODCASTS_DATA_DIR = stateDirectory;
+                PYTHONPATH = "${penv}/${penv.sitePackages}";
+              };
+              wantedBy = ["multi-user.target"];
+              after = ["network.target"] ++ lib.optional cfg.enableFetch "fetch-podcasts.timer";
             };
           };
         };
-    };
+      };
 }
