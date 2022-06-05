@@ -15,7 +15,7 @@
       in
       rec {
 
-        devShell = pkgs.mkShell {
+        devShells.default = pkgs.mkShell {
           buildInputs = [
             pkgs.python3Packages.poetry
             pkgs.sqlite
@@ -23,25 +23,17 @@
           ];
         };
 
-        packages = {
-          podcasts = pkgs.poetry2nix.mkPoetryApplication {
-            projectDir = ./.;
-            preferWheels = true;
-          };
+        packages.default = pkgs.poetry2nix.mkPoetryApplication {
+          projectDir = ./.;
+          preferWheels = true;
         };
 
-        defaultPackage = packages.podcasts;
-
-        apps = {
-          fetch-podcasts = utils.lib.mkApp {
-            drv = packages.podcasts;
-            exePath = "/bin/fetch-podcasts";
-          };
+        apps.default = utils.lib.mkApp {
+          drv = packages.podcasts;
+          exePath = "/bin/fetch-podcasts";
         };
 
-        defaultApp = apps.fetch-podcasts;
-
-        nixosModule = { config, lib, pkgs, ... }:
+        nixosModules.default = { config, lib, pkgs, ... }:
           let
             cfg = config.services.podcasts;
             podcasts = self.outputs.packages."${pkgs.system}".podcasts;
