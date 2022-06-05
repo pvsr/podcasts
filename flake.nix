@@ -38,7 +38,7 @@
       nixosModules.default = { config, lib, pkgs, ... }:
         let
           cfg = config.services.podcasts;
-          podcasts = self.outputs.packages."${pkgs.system}".podcasts;
+          podcasts = self.outputs.packages."${pkgs.system}".default;
           penv = podcasts.dependencyEnv;
           fetch-podcasts = "${podcasts}/bin/fetch-podcasts";
           stateDirectory = "/var/lib/podcasts/";
