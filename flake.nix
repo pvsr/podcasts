@@ -30,7 +30,7 @@
       };
 
       apps.default = utils.lib.mkApp {
-        drv = packages.podcasts;
+        drv = packages.default;
         exePath = "/bin/fetch-podcasts";
       };
 
