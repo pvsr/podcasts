@@ -77,6 +77,7 @@
           config = lib.mkIf (cfg.enableFetch || cfg.enableServe) {
             systemd.services.fetch-podcasts = {
               enable = cfg.enableFetch;
+              path = [pkgs.git-annex];
               script = "${fetch-podcasts} ${cfg.podcastDir} ${stateDirectory}";
               serviceConfig =
                 commonServiceConfig
