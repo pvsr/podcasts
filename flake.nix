@@ -69,13 +69,14 @@
                 default = stateDirectory + "podcasts";
               };
               startAt = mkOption {
-                type = types.str;
+                type = with types; either str (listOf str);
                 default = "daily";
               };
             };
           };
           config = lib.mkIf (cfg.enableFetch || cfg.enableServe) {
             systemd.services.fetch-podcasts = {
+              inherit (cfg) startAt;
               enable = cfg.enableFetch;
               path = [pkgs.git-annex];
               script = "${fetch-podcasts} ${cfg.podcastDir} ${stateDirectory}";
@@ -85,7 +86,6 @@
                   Type = "oneshot";
                   BindPaths = [cfg.podcastDir];
                 };
-              startAt = cfg.startAt;
             };
             systemd.services.serve-podcasts = {
               enable = cfg.enableServe;
