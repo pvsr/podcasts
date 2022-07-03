@@ -151,9 +151,8 @@ def process_feed(
             f"{podcast.slug}: we have {old_eps} while remote has {new_eps}, skipping import"
         )
     else:
-        update_feed(podcast.slug, feed)
         print(f"{podcast.slug}: annexing {podcast.url}")
-        run(
+        annex_cmd = run(
             [
                 "git-annex",
                 "importfeed",
@@ -163,8 +162,13 @@ def process_feed(
                 # "--fast",
                 # "--force",
             ],
-            check=True,
+            capture_output=True,
         )
+        if annex_cmd.returncode != 0:
+            print(f"{podcast.slug}: annex failed")
+            print(annex_cmd.stderr.decode(errors="ignore"))
+            return None
+        update_feed(podcast.slug, feed)
     return feed
 
 
