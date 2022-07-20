@@ -45,10 +45,7 @@ class EpisodeDb(Base):
 
 def create_database(data_dir: Optional[Path] = None):
     if data_dir is None:
-        data_dir = environ["PODCASTS_DATA_DIR"]
-        if not data_dir:
-            print("could not find data dir")
-            exit(1)
+        data_dir = Path(environ.get("PODCASTS_DATA_DIR", ""))
     engine = create_engine(
         f"sqlite:///{data_dir}/podcasts.sqlite",
         future=True,

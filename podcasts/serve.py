@@ -1,4 +1,5 @@
 from os import environ
+from pathlib import Path
 
 from flask import Flask, render_template, send_from_directory
 from sqlalchemy import desc, select
@@ -23,4 +24,6 @@ def home():
 
 @app.route("/<path:path>")
 def data(path):
-    return send_from_directory(environ["PODCASTS_ANNEX_DIR"], path, as_attachment=False)
+    return send_from_directory(
+        Path(environ.get("PODCASTS_ANNEX_DIR", "")), path, as_attachment=False
+    )
