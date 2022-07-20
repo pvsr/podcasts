@@ -43,6 +43,12 @@ class EpisodeDb(Base):
     podcast = relationship("PodcastDb", back_populates="episodes")
 
 
+class UserDb(Base):
+    __tablename__ = "user"
+    name = Column(String, primary_key=True, nullable=False)
+    password = Column(String, nullable=False)
+
+
 def create_database(data_dir: Optional[Path] = None):
     if data_dir is None:
         data_dir = Path(environ.get("PODCASTS_DATA_DIR", ""))

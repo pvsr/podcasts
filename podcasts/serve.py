@@ -1,16 +1,32 @@
 from os import environ
 from pathlib import Path
+from typing import Optional
 
 from flask import Flask, render_template, send_from_directory
+
+from flask_httpauth import HTTPBasicAuth
 from sqlalchemy import desc, select
 from sqlalchemy.orm import Session
+from werkzeug.security import check_password_hash
 
-from podcasts.db import PodcastDb, create_database
+from podcasts.db import PodcastDb, UserDb, create_database
 
 app = Flask(__name__)
+auth = HTTPBasicAuth()
+
+
+@auth.verify_password
+def verify_password(username, password) -> Optional[UserDb]:
+    engine = create_database()
+    with Session(engine) as session:
+        user = session.scalar(select(UserDb).filter_by(name=username))
+        if user and check_password_hash(user.password, password):
+            return user
+        return None
 
 
 @app.route("/")
+@auth.login_required
 def home():
     engine = create_database()
     with Session(engine) as session:
@@ -23,6 +39,7 @@ def home():
 
 
 @app.route("/<path:path>")
+@auth.login_required
 def data(path):
     return send_from_directory(
         Path(environ.get("PODCASTS_ANNEX_DIR", "")), path, as_attachment=False
