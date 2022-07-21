@@ -2,20 +2,14 @@ from os import environ
 from pathlib import Path
 from typing import Optional
 
-from flask import Flask, render_template, send_from_directory
+from flask import render_template, send_from_directory
 from flask_httpauth import HTTPBasicAuth
-from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import desc, select
 from werkzeug.security import check_password_hash
 
-from podcasts.db import PodcastDb, UserDb
+from podcasts.db import PodcastDb, UserDb, app, db
 
-app = Flask(__name__)
 auth = HTTPBasicAuth()
-app.config[
-    "SQLALCHEMY_DATABASE_URI"
-] = f'sqlite:///{environ.get("PODCASTS_DATA_DIR", "")}/podcasts.sqlite'
-db = SQLAlchemy(app)
 
 
 @auth.verify_password

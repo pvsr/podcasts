@@ -4,60 +4,53 @@ from pathlib import Path
 from sys import exit
 from typing import Optional
 
-from sqlalchemy import Column, DateTime, ForeignKey, String, create_engine
-from sqlalchemy.orm import declarative_base, relationship
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
 
-Base = declarative_base()
+app = Flask(__name__)
+app.config[
+    "SQLALCHEMY_DATABASE_URI"
+] = f'sqlite:///{Path(environ.get("PODCASTS_DATA_DIR", "")).resolve()/"podcasts.sqlite"}'
+db = SQLAlchemy(app)
 
 
-class PodcastDb(Base):
+class PodcastDb(db.Model):
     __tablename__ = "podcast"
-    slug = Column(String, primary_key=True, nullable=False)
-    title = Column(String, nullable=False)
-    image = Column(String, nullable=False)
-    image_title = Column(String, nullable=False)
-    last_ep = Column(DateTime, nullable=False)
-    last_fetch = Column(DateTime, nullable=False)
+    slug = db.Column(db.String, primary_key=True, nullable=False)
+    title = db.Column(db.String, nullable=False)
+    image = db.Column(db.String, nullable=False)
+    image_title = db.Column(db.String, nullable=False)
+    last_ep = db.Column(db.DateTime, nullable=False)
+    last_fetch = db.Column(db.DateTime, nullable=False)
 
-    episodes = relationship("EpisodeDb", back_populates="podcast")
+    episodes = db.relationship("EpisodeDb", back_populates="podcast")
 
     def last_ep_pretty(self):
         return month_day(self.last_ep)
 
 
-class EpisodeDb(Base):
+class EpisodeDb(db.Model):
     __tablename__ = "episode"
-    podcast_slug = Column(
-        String,
-        ForeignKey("podcast.slug"),
+    podcast_slug = db.Column(
+        db.String,
+        db.ForeignKey("podcast.slug"),
         primary_key=True,
         nullable=False,
     )
-    id = Column(String, primary_key=True, nullable=False)
-    title = Column(String, nullable=False)
-    description = Column(String, nullable=False)
-    published = Column(DateTime, nullable=False)
-    link = Column(String, nullable=False)
-    enclosure = Column(String, nullable=False)
+    id = db.Column(db.String, primary_key=True, nullable=False)
+    title = db.Column(db.String, nullable=False)
+    description = db.Column(db.String, nullable=False)
+    published = db.Column(db.DateTime, nullable=False)
+    link = db.Column(db.String, nullable=False)
+    enclosure = db.Column(db.String, nullable=False)
 
-    podcast = relationship("PodcastDb", back_populates="episodes")
+    podcast = db.relationship("PodcastDb", back_populates="episodes")
 
 
-class UserDb(Base):
+class UserDb(db.Model):
     __tablename__ = "user"
-    name = Column(String, primary_key=True, nullable=False)
-    password = Column(String, nullable=False)
-
-
-def create_database(data_dir: Optional[Path] = None):
-    if data_dir is None:
-        data_dir = Path(environ.get("PODCASTS_DATA_DIR", ""))
-    engine = create_engine(
-        f"sqlite:///{data_dir}/podcasts.sqlite",
-        future=True,
-    )
-    Base.metadata.create_all(engine)
-    return engine
+    name = db.Column(db.String, primary_key=True, nullable=False)
+    password = db.Column(db.String, nullable=False)
 
 
 def month_day(t: datetime) -> str:

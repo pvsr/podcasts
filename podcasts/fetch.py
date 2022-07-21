@@ -19,7 +19,7 @@ from sqlalchemy.dialects.sqlite import insert
 from sqlalchemy.orm import Session
 
 from podcasts.config import Config, Podcast
-from podcasts.db import EpisodeDb, PodcastDb, create_database
+from podcasts.db import EpisodeDb, PodcastDb, db
 
 
 # wrapper around the result of feedparser.parse()
@@ -276,11 +276,10 @@ def main():
     )
     parser.add_argument("data_dir", metavar="DIR", type=Path, help="database directory")
     args = parser.parse_args()
-    engine = create_database(args.data_dir)
     Config.load(args.data_dir)
-    with Session(engine) as session:
-        asyncio.run(fetch_feeds(session, args.annex_dir))
-        session.commit()
+    db.create_all()
+    asyncio.run(fetch_feeds(db.session, args.annex_dir))
+    db.session.commit()
 
 
 if __name__ == "__main__":
