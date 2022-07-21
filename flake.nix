@@ -52,47 +52,77 @@
           fetch-podcasts = "${podcasts}/bin/fetch-podcasts";
           stateDirectory = "/var/lib/podcasts/";
           commonServiceConfig = {
-            DynamicUser = true;
-            User = "podcasts";
-            Group = "podcasts";
             StateDirectory = "podcasts";
-            WorkingDirectory = cfg.podcastDir;
-            ProtectHome = "tmpfs";
+            # TODO more hardening
+            PrivateTmp = true;
+            RemoveIPC = true;
+            NoNewPrivileges = true;
+            ProtectSystem = "strict";
+            ProtectHome = "read-only";
+            RestrictSUIDSGID = true;
           };
         in {
           options = {
             services.podcasts = with lib; {
-              enableFetch = mkEnableOption "fetch-podcasts";
-              enableServe = mkEnableOption "serve-podcasts";
               podcastDir = mkOption {
                 type = types.str;
-                default = stateDirectory + "podcasts";
+                default = stateDirectory + "annex/hosted-podcasts";
               };
-              startAt = mkOption {
-                type = with types; either str (listOf str);
-                default = "daily";
+              dataDir = mkOption {
+                type = types.str;
+                default = stateDirectory;
+              };
+              fetch = {
+                enable = mkEnableOption "fetch-podcasts";
+                user = mkOption {
+                  type = types.str;
+                  default = "podcasts";
+                };
+                group = mkOption {
+                  type = types.str;
+                  default = "podcasts";
+                };
+                startAt = mkOption {
+                  type = with types; either str (listOf str);
+                  default = "daily";
+                };
+              };
+              serve = {
+                enable = mkEnableOption "serve-podcasts";
+                user = mkOption {
+                  type = types.str;
+                  default = "podcasts";
+                };
+                group = mkOption {
+                  type = types.str;
+                  default = "podcasts";
+                };
               };
             };
           };
-          config = lib.mkIf (cfg.enableFetch || cfg.enableServe) {
+          config = lib.mkIf (cfg.fetch.enable || cfg.serve.enable) {
             systemd.services.fetch-podcasts = {
-              inherit (cfg) startAt;
-              enable = cfg.enableFetch;
-              path = [pkgs.git-annex];
-              script = "${fetch-podcasts} ${cfg.podcastDir} ${stateDirectory}";
+              inherit (cfg.fetch) enable startAt;
+              path = [pkgs.git pkgs.git-annex];
+              script = "${fetch-podcasts} ${cfg.podcastDir} ${cfg.dataDir}";
               serviceConfig =
                 commonServiceConfig
                 // {
+                  User = cfg.fetch.user;
+                  Group = cfg.fetch.group;
                   Type = "oneshot";
-                  BindPaths = [cfg.podcastDir];
+                  BindPaths = [cfg.podcastDir cfg.dataDir];
                 };
+              environment.PODCASTS_DATA_DIR = cfg.dataDir;
             };
             systemd.services.serve-podcasts = {
-              enable = cfg.enableServe;
+              inherit (cfg.serve) enable;
               serviceConfig =
                 commonServiceConfig
                 // {
-                  BindReadOnlyPaths = [cfg.podcastDir];
+                  User = cfg.serve.user;
+                  Group = cfg.serve.group;
+                  BindReadOnlyPaths = [cfg.podcastDir cfg.dataDir];
                   # TODO get port from cfg
                   ExecStart = ''
                     ${pkgs.python3Packages.gunicorn}/bin/gunicorn -b 0.0.0.0:5998 podcasts.serve:app
@@ -101,11 +131,23 @@
               environment = {
                 # TODO unify with cli args
                 PODCASTS_ANNEX_DIR = cfg.podcastDir;
-                PODCASTS_DATA_DIR = stateDirectory;
+                PODCASTS_DATA_DIR = cfg.dataDir;
                 PYTHONPATH = "${penv}/${penv.sitePackages}";
               };
               wantedBy = ["multi-user.target"];
-              after = ["network.target"] ++ lib.optional cfg.enableFetch "fetch-podcasts.timer";
+              after = ["network.target"] ++ lib.optional cfg.fetch.enable "fetch-podcasts.timer";
+            };
+
+            users.users = lib.mkIf (cfg.fetch.user == "podcasts" || cfg.serve.user == "podcasts") {
+              podcasts = {
+                isSystemUser = true;
+                group = "podcasts";
+                home = stateDirectory;
+              };
+            };
+
+            users.groups = lib.mkIf (cfg.fetch.group == "podcasts" || cfg.serve.group == "podcasts") {
+              podcasts = {};
             };
           };
         };
