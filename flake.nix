@@ -97,6 +97,10 @@
                   type = types.str;
                   default = "podcasts";
                 };
+                bind = mkOption {
+                  type = types.str;
+                  default = "127.0.0.1:5998";
+                };
               };
             };
           };
@@ -123,9 +127,8 @@
                   User = cfg.serve.user;
                   Group = cfg.serve.group;
                   BindReadOnlyPaths = [cfg.podcastDir cfg.dataDir];
-                  # TODO get port from cfg
                   ExecStart = ''
-                    ${pkgs.python3Packages.gunicorn}/bin/gunicorn -b 0.0.0.0:5998 podcasts.serve:app
+                    ${pkgs.python3Packages.gunicorn}/bin/gunicorn -b ${cfg.serve.bind} podcasts.serve:app
                   '';
                 };
               environment = {
