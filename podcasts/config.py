@@ -19,7 +19,6 @@ class Podcast:
 @dataclass
 class Config:
     base_url: str
-    auth_url: str
     tags_to_strip: list[str]
     podcasts: list[Podcast]
     _instance: Optional["Config"] = None
