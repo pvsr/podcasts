@@ -27,6 +27,9 @@ class PodcastDb(db.Model):
     def last_ep_pretty(self):
         return month_day(self.last_ep)
 
+    def last_fetch_pretty(self):
+        return month_day_time(self.last_fetch)
+
 
 class EpisodeDb(db.Model):
     __tablename__ = "episode"
@@ -54,6 +57,10 @@ class UserDb(db.Model):
 
 def month_day(t: datetime) -> str:
     return f"{t:%b %-d}{month_day_suffix(t)}{year(t)}"
+
+
+def month_day_time(t: datetime) -> str:
+    return f"{t:%b %-d}{month_day_suffix(t)}{year(t)} {t:%R}"
 
 
 def month_day_suffix(t: datetime) -> str:
