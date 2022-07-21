@@ -18,8 +18,8 @@ from sqlalchemy import text
 from sqlalchemy.dialects.sqlite import insert
 from sqlalchemy.orm import Session
 
+from podcasts import EpisodeDb, PodcastDb, db
 from podcasts.config import Config, Podcast
-from podcasts.db import EpisodeDb, PodcastDb, db
 
 
 # wrapper around the result of feedparser.parse()

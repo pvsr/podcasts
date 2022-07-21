@@ -7,7 +7,7 @@ from flask_httpauth import HTTPBasicAuth
 from sqlalchemy import desc, select
 from werkzeug.security import check_password_hash
 
-from podcasts.db import PodcastDb, UserDb, app, db
+from podcasts import PodcastDb, UserDb, app, db
 
 auth = HTTPBasicAuth()
 
