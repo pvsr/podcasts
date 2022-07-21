@@ -161,13 +161,8 @@ def process_feed(
                 f"{podcast.slug}/{FILENAME_TEMPLATE}",
                 # "--fast",
                 # "--force",
-            ],
-            capture_output=True,
+            ]
         )
-        if annex_cmd.returncode != 0:
-            print(f"{podcast.slug}: annex failed")
-            print(annex_cmd.stderr.decode(errors="ignore"))
-            return None
         update_feed(podcast.slug, feed)
     return feed
 
