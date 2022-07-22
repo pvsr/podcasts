@@ -13,7 +13,7 @@ auth = HTTPBasicAuth()
 
 @auth.verify_password
 def verify_password(username, password) -> Optional[tuple[str, str]]:
-    user = UserDb.filter_by(name=username).first()
+    user = UserDb.query.filter_by(name=username).first()
     if user and check_password_hash(user.password, password):
         return (username, password)
     return None
