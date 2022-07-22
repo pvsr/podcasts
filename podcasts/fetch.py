@@ -173,6 +173,7 @@ def process_feed(
         )
         if annex_cmd.returncode != 0:
             print(f"{podcast.slug}: failed to annex feed")
+            return None
         update_feed(podcast.slug, feed)
     return feed
 
