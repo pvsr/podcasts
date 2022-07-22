@@ -107,7 +107,6 @@
             systemd.services.fetch-podcasts = {
               inherit (cfg.fetch) enable startAt;
               path = [pkgs.git pkgs.git-annex];
-              script = "${podcasts}/bin/fetch-podcasts";
               serviceConfig =
                 commonServiceConfig
                 // {
@@ -115,6 +114,7 @@
                   Group = cfg.fetch.group;
                   Type = "oneshot";
                   BindPaths = [cfg.podcastDir cfg.dataDir];
+                  ExecStart = "${podcasts}/bin/fetch-podcasts";
                 };
               environment = {
                 PODCASTS_ANNEX_DIR = cfg.podcastDir;
