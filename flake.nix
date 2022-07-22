@@ -50,6 +50,7 @@
           podcasts = self.outputs.packages."${pkgs.system}".default;
           penv = podcasts.dependencyEnv;
           stateDirectory = "/var/lib/podcasts/";
+          podcastDir = "${cfg.annexDir}/${cfg.podcastSubdir}";
           commonServiceConfig = {
             StateDirectory = "podcasts";
             # TODO more hardening
@@ -63,9 +64,13 @@
         in {
           options = {
             services.podcasts = with lib; {
-              podcastDir = mkOption {
+              annexDir = mkOption {
                 type = types.str;
-                default = stateDirectory + "annex/hosted-podcasts";
+                default = stateDirectory + "annex";
+              };
+              podcastSubdir = mkOption {
+                type = types.str;
+                default = "hosted-podcasts";
               };
               dataDir = mkOption {
                 type = types.str;
@@ -113,11 +118,11 @@
                   User = cfg.fetch.user;
                   Group = cfg.fetch.group;
                   Type = "oneshot";
-                  BindPaths = [cfg.podcastDir cfg.dataDir];
+                  BindPaths = [cfg.annexDir cfg.dataDir];
                   ExecStart = "${podcasts}/bin/fetch-podcasts";
                 };
               environment = {
-                PODCASTS_ANNEX_DIR = cfg.podcastDir;
+                PODCASTS_ANNEX_DIR = podcastDir;
                 PODCASTS_DATA_DIR = cfg.dataDir;
               };
             };
@@ -128,13 +133,13 @@
                 // {
                   User = cfg.serve.user;
                   Group = cfg.serve.group;
-                  BindReadOnlyPaths = [cfg.podcastDir cfg.dataDir];
+                  BindReadOnlyPaths = [podcastDir cfg.dataDir];
                   ExecStart = ''
                     ${pkgs.python3Packages.gunicorn}/bin/gunicorn -b ${cfg.serve.bind} podcasts.serve:app
                   '';
                 };
               environment = {
-                PODCASTS_ANNEX_DIR = cfg.podcastDir;
+                PODCASTS_ANNEX_DIR = podcastDir;
                 PODCASTS_DATA_DIR = cfg.dataDir;
                 PODCASTS_DOMAIN = "https://podcasts.peterrice.xyz";
                 PYTHONPATH = "${penv}/${penv.sitePackages}";
