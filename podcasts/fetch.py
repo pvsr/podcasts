@@ -71,18 +71,24 @@ async def fetch_feeds() -> None:
             )
         )
     }
+    fallback_status = {"old_eps": 0, "last_fetch": None}
     parsed_feeds = await asyncio.gather(
         *[
             asyncio.to_thread(
                 process_feed,
                 podcast,
-                **last.get(podcast.slug, {"old_eps": 0, "last_fetch": None}),
+                **last.get(podcast.slug, fallback_status),
             )
             for podcast in config.podcasts
         ]
     ) + await asyncio.gather(
         *[
-            asyncio.to_thread(download_feed, podcast, podcast.url)
+            asyncio.to_thread(
+                download_feed,
+                podcast,
+                last.get(podcast.slug, fallback_status)["last_fetch"],
+                podcast.url,
+            )
             for podcast in config.passthru
         ]
     )
@@ -143,13 +149,8 @@ async def fetch_feeds() -> None:
 def process_feed(
     podcast: Podcast, old_eps: int, last_fetch: Optional[datetime]
 ) -> Optional[FeedData]:
-    if last_fetch and datetime.now() - last_fetch < timedelta(hours=1):
-        print(f"{podcast.slug}: fetched in last hour, continuing")
-        return None
-
-    feed = download_feed(podcast)
+    feed = download_feed(podcast, last_fetch)
     if not feed:
-        print(f"{podcast.slug}: couldn't download {podcast.url}, continuing")
         return None
 
     new_eps = len(feed.parsed.entries)
@@ -178,7 +179,13 @@ def process_feed(
     return feed
 
 
-def download_feed(podcast: Podcast, url: Optional[str] = None) -> Optional[FeedData]:
+def download_feed(
+    podcast: Podcast, last_fetch: Optional[datetime], url: Optional[str] = None
+) -> Optional[FeedData]:
+    if last_fetch and datetime.now() - last_fetch < timedelta(hours=1):
+        print(f"{podcast.slug}: fetched in last hour, continuing")
+        return None
+
     print(f"{podcast.slug}: downloading")
     r = requests.get(podcast.url)
     if r.status_code != 200:
