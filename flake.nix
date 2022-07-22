@@ -137,6 +137,7 @@
               environment = {
                 PODCASTS_ANNEX_DIR = cfg.podcastDir;
                 PODCASTS_DATA_DIR = cfg.dataDir;
+                PODCASTS_DOMAIN = "https://podcasts.peterrice.xyz";
                 PYTHONPATH = "${penv}/${penv.sitePackages}";
               };
               wantedBy = ["multi-user.target"];

@@ -29,7 +29,7 @@ def home():
     ).all()
     username, password = auth.current_user()
     login = f"{username}:{password}"
-    base_url = urlparse(Config.load(Path(app.config.get("DATA_DIR", ""))).base_url)
+    base_url = urlparse(app.config.get("DOMAIN", ""))
     last_podcast = max(podcasts, key=lambda p: p.last_fetch)
     resp = make_response(
         render_template(

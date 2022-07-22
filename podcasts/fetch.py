@@ -203,7 +203,7 @@ def relink(slug: str, feed: FeedData) -> Optional[str]:
                 filename = git_annex_sanitize_filename(entry.guid)
                 replacements[
                     link.href
-                ] = f"{Config.load().base_url}/{slug}/{filename}.mp3"
+                ] = f"{app.config.get('DOMAIN', '')}/{slug}/{filename}.mp3"
     raw = feed.raw
     for old, new in replacements.items():
         # print(f"replacing {old} with {new}")
