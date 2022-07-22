@@ -32,17 +32,19 @@ class ParsedFeed:
 class FeedData:
     slug: str
     raw: str
+    url: Optional[str]
     parsed: ParsedFeed
     last_ep: datetime
 
     @classmethod
-    def parse(cls, slug: str, raw: str) -> Optional["FeedData"]:
+    def parse(cls, slug: str, raw: str, url: Optional[str]) -> Optional["FeedData"]:
         parsed = cast(ParsedFeed, feedparser.parse(raw))
         if len(parsed.entries) == 0:
             return None
         return FeedData(
             slug,
             raw,
+            url,
             parsed,
             to_datetime(parsed.entries[0].published_parsed),
         )
@@ -79,6 +81,11 @@ async def fetch_feeds(session) -> None:
             )
             for podcast in config.podcasts
         ]
+    ) + await asyncio.gather(
+        *[
+            asyncio.to_thread(download_feed, podcast, podcast.url)
+            for podcast in config.passthru
+        ]
     )
     feeds = sorted(
         filter(None, parsed_feeds),
@@ -96,6 +103,7 @@ async def fetch_feeds(session) -> None:
             image_title=feed.parsed.feed.image.title,
             last_ep=feed.last_ep,
             last_fetch=last_fetch,
+            url=feed.url,
             episodes=[
                 EpisodeDb(
                     podcast_slug=feed.slug,
@@ -167,7 +175,7 @@ def process_feed(
     return feed
 
 
-def download_feed(podcast: Podcast) -> Optional[FeedData]:
+def download_feed(podcast: Podcast, url: Optional[str] = None) -> Optional[FeedData]:
     print(f"{podcast.slug}: downloading")
     r = requests.get(podcast.url)
     if r.status_code != 200:
@@ -176,7 +184,7 @@ def download_feed(podcast: Podcast) -> Optional[FeedData]:
     if getattr(r, "from_cache", False):
         print(f"{podcast.slug}: cache hit")
     feedtext = r.text
-    return FeedData.parse(podcast.slug, feedtext)
+    return FeedData.parse(podcast.slug, feedtext, url)
 
 
 def update_feed(slug: str, feed: FeedData) -> bool:

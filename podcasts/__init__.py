@@ -20,7 +20,8 @@ class PodcastDb(db.Model):
     image = db.Column(db.String, nullable=False)
     image_title = db.Column(db.String, nullable=False)
     last_ep = db.Column(db.DateTime, nullable=False)
-    last_fetch = db.Column(db.DateTime, nullable=False)
+    last_fetch = db.Column(db.DateTime, nullable=True)
+    url = db.Column(db.String, nullable=True)
 
     episodes = db.relationship("EpisodeDb", back_populates="podcast")
 

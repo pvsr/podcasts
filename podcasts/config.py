@@ -20,6 +20,7 @@ class Podcast:
 class Config:
     tags_to_strip: list[str]
     podcasts: list[Podcast]
+    passthru: list[Podcast]
     _instance: Optional["Config"] = None
 
     @classmethod
