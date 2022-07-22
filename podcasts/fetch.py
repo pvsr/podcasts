@@ -15,7 +15,6 @@ import feedparser
 import requests
 from sqlalchemy import text
 from sqlalchemy.dialects.sqlite import insert
-from sqlalchemy.orm import Session
 
 from podcasts import EpisodeDb, PodcastDb, app, db
 from podcasts.config import Config, Podcast
@@ -169,8 +168,11 @@ def process_feed(
                 f"{podcast.slug}/{FILENAME_TEMPLATE}",
                 # "--fast",
                 # "--force",
-            ]
+            ],
+            check=False,
         )
+        if annex_cmd.returncode != 0:
+            print(f"{podcast.slug}: failed to annex feed")
         update_feed(podcast.slug, feed)
     return feed
 
@@ -195,7 +197,7 @@ def update_feed(slug: str, feed: FeedData) -> bool:
         return False
 
     print(f"{slug}: saving modified to {updated}")
-    with open(updated, "w") as f:
+    with open(updated, "w", encoding="utf-8") as f:
         print(pretty_rss(relinked), file=f)
     return True
 

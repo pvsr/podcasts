@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from functools import cache
 from pathlib import Path
 from typing import Optional
 
@@ -31,7 +30,7 @@ class Config:
 
 
 def open_config(data_dir: Path) -> Config:
-    with open(data_dir / "podcasts.yml") as f:
+    with open(data_dir / "podcasts.yml", encoding="utf-8") as f:
         return dacite.from_dict(
             Config,
             yaml.safe_load(f),

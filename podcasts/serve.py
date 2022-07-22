@@ -8,7 +8,6 @@ from sqlalchemy import desc, select
 from werkzeug.security import check_password_hash
 
 from podcasts import PodcastDb, UserDb, app, db
-from podcasts.config import Config
 
 auth = HTTPBasicAuth()
 
