@@ -61,6 +61,11 @@
             ProtectHome = "read-only";
             RestrictSUIDSGID = true;
           };
+          environment = {
+            PODCASTS_ANNEX_DIR = podcastDir;
+            PODCASTS_DATA_DIR = cfg.dataDir;
+            PODCASTS_DOMAIN = "https://podcasts.peterrice.xyz";
+          };
         in {
           options = {
             services.podcasts = with lib; {
@@ -111,6 +116,7 @@
           config = lib.mkIf (cfg.fetch.enable || cfg.serve.enable) {
             systemd.services.fetch-podcasts = {
               inherit (cfg.fetch) enable startAt;
+              inherit environment;
               path = [pkgs.git pkgs.git-annex];
               serviceConfig =
                 commonServiceConfig
@@ -121,10 +127,6 @@
                   BindPaths = [cfg.annexDir cfg.dataDir];
                   ExecStart = "${podcasts}/bin/fetch-podcasts";
                 };
-              environment = {
-                PODCASTS_ANNEX_DIR = podcastDir;
-                PODCASTS_DATA_DIR = cfg.dataDir;
-              };
             };
             systemd.services.serve-podcasts = {
               inherit (cfg.serve) enable;
@@ -138,12 +140,11 @@
                     ${pkgs.python3Packages.gunicorn}/bin/gunicorn -b ${cfg.serve.bind} podcasts.serve:app
                   '';
                 };
-              environment = {
-                PODCASTS_ANNEX_DIR = podcastDir;
-                PODCASTS_DATA_DIR = cfg.dataDir;
-                PODCASTS_DOMAIN = "https://podcasts.peterrice.xyz";
-                PYTHONPATH = "${penv}/${penv.sitePackages}";
-              };
+              environment =
+                environment
+                // {
+                  PYTHONPATH = "${penv}/${penv.sitePackages}";
+                };
               wantedBy = ["multi-user.target"];
               after = ["network.target"] ++ lib.optional cfg.fetch.enable "fetch-podcasts.timer";
             };
