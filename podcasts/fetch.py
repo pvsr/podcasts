@@ -52,7 +52,7 @@ class FeedData:
 FILENAME_TEMPLATE = "${itemid}${extension}"
 
 
-async def fetch_feeds(session) -> None:
+async def fetch_feeds() -> None:
     annex_dir = Path(app.config.get("ANNEX_DIR", ""))
     config = Config.load()
     os.chdir(annex_dir)
@@ -62,7 +62,7 @@ async def fetch_feeds(session) -> None:
             "old_eps": row.eps,
             "last_fetch": datetime.fromisoformat(row.last_fetch),
         }
-        for row in session.execute(
+        for row in db.session.execute(
             text(
                 """
                 select p.slug, p.last_fetch, count(*) as eps
@@ -121,14 +121,14 @@ async def fetch_feeds(session) -> None:
         for feed in feeds
     ]
     insert_stmt = insert(PodcastDb)
-    session.execute(
+    db.session.execute(
         insert_stmt.on_conflict_do_update(
             set_={col: insert_stmt.excluded[col] for col in ["last_ep", "last_fetch"]}
         ),
         [vars(podcast) for podcast in podcasts],
     )
     insert_stmt = insert(EpisodeDb)
-    session.execute(
+    db.session.execute(
         insert_stmt.on_conflict_do_update(
             set_={
                 col: insert_stmt.excluded[col]
@@ -137,7 +137,7 @@ async def fetch_feeds(session) -> None:
         ),
         [vars(episode) for podcast in podcasts for episode in podcast.episodes],
     )
-    session.commit()
+    db.session.commit()
 
 
 def process_feed(
@@ -277,7 +277,7 @@ def to_datetime(t: time.struct_time) -> datetime:
 def main():
     Config.load(Path(app.config.get("DATA_DIR"), ""))
     db.create_all()
-    asyncio.run(fetch_feeds(db.session))
+    asyncio.run(fetch_feeds())
     db.session.commit()
 
 
