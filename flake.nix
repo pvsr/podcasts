@@ -108,7 +108,7 @@
             systemd.services.fetch-podcasts = {
               inherit (cfg.fetch) enable startAt;
               path = [pkgs.git pkgs.git-annex];
-              script = "${fetch-podcasts} ${cfg.podcastDir} ${cfg.dataDir}";
+              script = fetch-podcasts;
               serviceConfig =
                 commonServiceConfig
                 // {
@@ -117,7 +117,10 @@
                   Type = "oneshot";
                   BindPaths = [cfg.podcastDir cfg.dataDir];
                 };
-              environment.PODCASTS_DATA_DIR = cfg.dataDir;
+              environment = {
+                PODCASTS_ANNEX_DIR = cfg.podcastDir;
+                PODCASTS_DATA_DIR = cfg.dataDir;
+              };
             };
             systemd.services.serve-podcasts = {
               inherit (cfg.serve) enable;
@@ -132,7 +135,6 @@
                   '';
                 };
               environment = {
-                # TODO unify with cli args
                 PODCASTS_ANNEX_DIR = cfg.podcastDir;
                 PODCASTS_DATA_DIR = cfg.dataDir;
                 PYTHONPATH = "${penv}/${penv.sitePackages}";

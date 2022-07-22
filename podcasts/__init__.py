@@ -1,5 +1,4 @@
 from datetime import datetime
-from os import environ
 from pathlib import Path
 from typing import Optional
 
@@ -7,9 +6,10 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
+app.config.from_prefixed_env("PODCASTS")
 app.config[
     "SQLALCHEMY_DATABASE_URI"
-] = f'sqlite:///{Path(environ.get("PODCASTS_DATA_DIR", "")).resolve()/"podcasts.sqlite"}'
+] = f'sqlite:///{Path(app.config.get("DATA_DIR", "")).resolve()/"podcasts.sqlite"}'
 db = SQLAlchemy(app)
 
 

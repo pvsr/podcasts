@@ -1,4 +1,3 @@
-import argparse
 import asyncio
 import html
 import os
@@ -18,7 +17,7 @@ from sqlalchemy import text
 from sqlalchemy.dialects.sqlite import insert
 from sqlalchemy.orm import Session
 
-from podcasts import EpisodeDb, PodcastDb, db
+from podcasts import EpisodeDb, PodcastDb, app, db
 from podcasts.config import Config, Podcast
 
 
@@ -52,7 +51,8 @@ class FeedData:
 FILENAME_TEMPLATE = "${itemid}${extension}"
 
 
-async def fetch_feeds(session, annex_dir: Path) -> None:
+async def fetch_feeds(session) -> None:
+    annex_dir = Path(app.config.get("ANNEX_DIR", ""))
     config = Config.load()
     os.chdir(annex_dir)
 
@@ -265,15 +265,9 @@ def to_datetime(t: time.struct_time) -> datetime:
 
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "annex_dir", metavar="DIR", type=Path, help="git-annex directory"
-    )
-    parser.add_argument("data_dir", metavar="DIR", type=Path, help="database directory")
-    args = parser.parse_args()
-    Config.load(args.data_dir)
+    Config.load(Path(app.config.get("DATA_DIR"), ""))
     db.create_all()
-    asyncio.run(fetch_feeds(db.session, args.annex_dir))
+    asyncio.run(fetch_feeds(db.session))
     db.session.commit()
 
 

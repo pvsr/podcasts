@@ -1,4 +1,3 @@
-from os import environ
 from pathlib import Path
 from typing import Optional
 from urllib.parse import urlparse
@@ -30,16 +29,16 @@ def home():
     ).all()
     username, password = auth.current_user()
     login = f"{username}:{password}"
-    base_url = urlparse(
-        Config.load(Path(environ.get("PODCASTS_DATA_DIR", ""))).base_url
-    )
+    base_url = urlparse(Config.load(Path(app.config.get("DATA_DIR", ""))).base_url)
     last_podcast = max(podcasts, key=lambda p: p.last_fetch)
-    resp = make_response(render_template(
-        "podcasts.html",
-        podcasts=podcasts,
-        updated=last_podcast.last_fetch_pretty(),
-        auth_url=base_url._replace(netloc=f"{login}@{base_url.netloc}").geturl(),
-    ))
+    resp = make_response(
+        render_template(
+            "podcasts.html",
+            podcasts=podcasts,
+            updated=last_podcast.last_fetch_pretty(),
+            auth_url=base_url._replace(netloc=f"{login}@{base_url.netloc}").geturl(),
+        )
+    )
     resp.last_modified = last_podcast.last_fetch
     return resp
 
@@ -48,5 +47,5 @@ def home():
 @auth.login_required
 def data(path):
     return send_from_directory(
-        Path(environ.get("PODCASTS_ANNEX_DIR", "")), path, as_attachment=False
+        Path(app.config.get("ANNEX_DIR", "")), path, as_attachment=False
     )
