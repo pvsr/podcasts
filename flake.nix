@@ -49,7 +49,6 @@
           cfg = config.services.podcasts;
           podcasts = self.outputs.packages."${pkgs.system}".default;
           penv = podcasts.dependencyEnv;
-          fetch-podcasts = "${podcasts}/bin/fetch-podcasts";
           stateDirectory = "/var/lib/podcasts/";
           commonServiceConfig = {
             StateDirectory = "podcasts";
@@ -108,7 +107,7 @@
             systemd.services.fetch-podcasts = {
               inherit (cfg.fetch) enable startAt;
               path = [pkgs.git pkgs.git-annex];
-              script = fetch-podcasts;
+              script = "${podcasts}/bin/fetch-podcasts";
               serviceConfig =
                 commonServiceConfig
                 // {
