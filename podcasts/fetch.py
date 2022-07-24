@@ -287,6 +287,7 @@ def main():
     db.create_all()
     asyncio.run(fetch_feeds())
     db.session.commit()
+    run(["git-annex", "status"], check=False)
 
 
 if __name__ == "__main__":
