@@ -2,11 +2,11 @@ from pathlib import Path
 from typing import Optional
 from urllib.parse import urlparse
 
-from flask import make_response, render_template, send_from_directory
+from flask import abort, make_response, render_template, send_from_directory
 from flask_httpauth import HTTPBasicAuth
 from werkzeug.security import check_password_hash
 
-from podcasts import PodcastDb, UserDb, app, db
+from podcasts import EpisodeDb, PodcastDb, UserDb, app, db
 
 auth = HTTPBasicAuth()
 
@@ -37,6 +37,19 @@ def home():
     )
     resp.last_modified = last_podcast.last_fetch
     return resp
+
+
+@app.route("/show/<slug>")
+def show(slug: str):
+    podcast = PodcastDb.query.filter_by(slug=slug).first()
+    if not podcast:
+        abort(404)
+    episodes = (
+        EpisodeDb.query.filter_by(podcast_slug=slug)
+        .order_by(EpisodeDb.published.desc())
+        .all()
+    )
+    return render_template("podcast.html", podcast=podcast, episodes=episodes)
 
 
 @app.route("/<path:path>")

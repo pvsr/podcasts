@@ -50,6 +50,9 @@ class EpisodeDb(db.Model):
 
     podcast = db.relationship("PodcastDb", back_populates="episodes")
 
+    def href(self, archived: bool):
+        return f"/{self.podcast_slug}/{self.id}.mp3" if archived else self.enclosure
+
 
 class UserDb(db.Model):
     __tablename__ = "user"
