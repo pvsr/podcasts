@@ -11,13 +11,14 @@
       <div>
         <img src="{{ podcast.image }}" alt="{{ podcast.image_title }}">
         <div>
-          <h1><a href="show/{{ podcast.slug }}">{{ podcast.title }}</a></h1>
+          <h1>{{ podcast.title }}</h1>
           <h2>latest episode: {{ podcast.last_ep_pretty() }}</h2>
           {% if podcast.url %}
           <p><a href="{{ podcast.url }}">RSS feed</a> (unarchived)</p>
           {% else %}
           <p><a href="{{ auth_url }}/{{ podcast.slug }}.rss">RSS feed</a></p>
           {% endif %}
+          <p><a href="show/{{ podcast.slug }}">episodes</a></p>
         </div>
       </div>
       {% endfor %}
