@@ -46,7 +46,7 @@ def show(slug: str):
         abort(404)
     episodes = (
         EpisodeDb.query.filter_by(podcast_slug=slug)
-        .order_by(EpisodeDb.published.desc())
+        .order_by(EpisodeDb.published.asc())
         .all()
     )
     return render_template("podcast.html", podcast=podcast, episodes=episodes)
