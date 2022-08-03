@@ -20,6 +20,7 @@ def verify_password(username, password) -> Optional[tuple[str, str]]:
 
 
 @app.route("/")
+@app.route("/show/")
 @auth.login_required
 def home():
     podcasts = PodcastDb.query.order_by(db.desc(PodcastDb.last_ep)).all()
