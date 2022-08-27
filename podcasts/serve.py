@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import Optional
 from urllib.parse import urlparse
 
-from flask import abort, make_response, render_template, send_from_directory
+from flask import abort, make_response, render_template, send_from_directory, Response
 from flask_httpauth import HTTPBasicAuth
 from werkzeug.security import check_password_hash
 
@@ -12,7 +12,7 @@ auth = HTTPBasicAuth()
 
 
 @auth.verify_password
-def verify_password(username, password) -> Optional[tuple[str, str]]:
+def verify_password(username: str, password: str) -> Optional[tuple[str, str]]:
     user = UserDb.query.filter_by(name=username).first()
     if user and check_password_hash(user.password, password):
         return (username, password)
@@ -22,7 +22,7 @@ def verify_password(username, password) -> Optional[tuple[str, str]]:
 @app.route("/")
 @app.route("/show/")
 @auth.login_required
-def home():
+def home() -> Response:
     podcasts = PodcastDb.query.order_by(db.desc(PodcastDb.last_ep)).all()
     username, password = auth.current_user()
     login = f"{username}:{password}"
@@ -55,7 +55,7 @@ def show(slug: str):
 
 @app.route("/<path:path>")
 @auth.login_required
-def data(path):
+def data(path: Path) -> Response:
     return send_from_directory(
         Path(app.config.get("ANNEX_DIR", "")), path, as_attachment=False
     )

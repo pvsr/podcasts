@@ -267,7 +267,7 @@ def sanitize_char(char: str) -> str:
 # sanitizeLeadingFilePathCharacter s = s
 
 
-def pretty_rss(raw: str) -> xml.dom.minidom.Document:
+def pretty_rss(raw: str) -> str:
     return strip_cruft(xml.dom.minidom.parseString(raw)).toprettyxml()
 
 
@@ -282,8 +282,8 @@ def to_datetime(t: time.struct_time) -> datetime:
     return datetime.fromtimestamp(time.mktime(t))
 
 
-def main():
-    Config.load(Path(app.config.get("DATA_DIR"), ""))
+def main() -> None:
+    Config.load(Path(app.config.get("DATA_DIR", "")))
     db.create_all()
     asyncio.run(fetch_feeds())
     db.session.commit()

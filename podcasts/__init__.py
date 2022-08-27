@@ -26,10 +26,10 @@ class PodcastDb(db.Model):
 
     episodes = db.relationship("EpisodeDb", back_populates="podcast")
 
-    def last_ep_pretty(self):
+    def last_ep_pretty(self) -> str:
         return month_day(self.last_ep)
 
-    def last_fetch_pretty(self):
+    def last_fetch_pretty(self) -> str:
         return month_day_time(self.last_fetch)
 
 
