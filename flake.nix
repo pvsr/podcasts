@@ -2,12 +2,14 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     utils.url = "github:numtide/flake-utils";
+    pre-commit-hooks.url = "github:cachix/pre-commit-hooks.nix";
   };
 
   outputs = {
     self,
     nixpkgs,
     utils,
+    pre-commit-hooks,
   }: let
     out = system: let
       pkgs = nixpkgs.legacyPackages."${system}";
@@ -17,6 +19,7 @@
       };
     in rec {
       devShells.default = pkgs.mkShell {
+        inherit (self.checks.${system}.pre-commit-check) shellHook;
         buildInputs = [
           pkgs.python3Packages.poetry
           pkgs.sqlite
@@ -32,6 +35,20 @@
       apps.default = utils.lib.mkApp {
         drv = packages.default;
         exePath = "/bin/fetch-podcasts";
+      };
+
+      checks = {
+        pre-commit-check = pre-commit-hooks.lib.${system}.run {
+          src = ./.;
+          hooks = {
+            alejandra.enable = true;
+            deadnix.enable = true;
+            statix.enable = true;
+
+            black.enable = true;
+            isort.enable = true;
+          };
+        };
       };
 
       formatter = pkgs.alejandra;
