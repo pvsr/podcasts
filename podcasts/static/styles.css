@@ -25,6 +25,7 @@ html {
   display: flex;
   flex-flow: row wrap;
   justify-content: space-around;
+  column-gap: 1%;
 }
 
 .podcasts > div > img {
