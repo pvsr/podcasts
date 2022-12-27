@@ -116,7 +116,7 @@ async def fetch_feeds() -> None:
                     title=ep.title,
                     description=ep.description,
                     published=to_datetime(ep.published_parsed),
-                    link=ep.link,
+                    link=ep.get("link"),
                     enclosure=[link.href for link in ep.links if "audio" in link.type][
                         0
                     ],

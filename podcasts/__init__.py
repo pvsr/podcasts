@@ -45,7 +45,7 @@ class EpisodeDb(db.Model):
     title = db.Column(db.String, nullable=False)
     description = db.Column(db.String, nullable=False)
     published = db.Column(db.DateTime, nullable=False)
-    link = db.Column(db.String, nullable=False)
+    link = db.Column(db.String, nullable=True)
     enclosure = db.Column(db.String, nullable=False)
 
     podcast = db.relationship("PodcastDb", back_populates="episodes")
