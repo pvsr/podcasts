@@ -24,6 +24,7 @@ types-requests = "^2.27.27"
 types-PyYAML = "^6.0.7"
 SQLAlchemy = {extras = ["mypy"], version = "^1.4.36"}
 isort = "^5.10.1"
+alembic = "^1.9.1"
 
 [tool.poetry.scripts]
 fetch-podcasts = "podcasts.fetch:main"
