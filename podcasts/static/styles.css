@@ -32,8 +32,7 @@ html {
   flex: 0;
   max-width: 300px;
   border-radius: 7px;
-  object-fit: contain;
-  object-position: top;
+  margin-bottom: auto;
 }
 
 .podcasts > div > div {
