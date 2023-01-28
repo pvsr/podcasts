@@ -24,6 +24,10 @@ types-PyYAML = "^6.0.7"
 SQLAlchemy = {extras = ["mypy"], version = "^1.4.36"}
 alembic = "^1.9.1"
 ruff = "*"
+python-lsp-server = "*"
+pylsp-mypy = "*"
+python-lsp-black = "*"
+python-lsp-ruff = "*"
 
 [tool.poetry.scripts]
 fetch-podcasts = "podcasts.fetch:main"
@@ -53,3 +57,6 @@ ignore = [
   "ANN101", # annotate self
   "ANN102", # annotate cls
 ]
+
+[tool.pylsp-mypy]
+strict = true
