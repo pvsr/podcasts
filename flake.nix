@@ -21,7 +21,7 @@
       devShells.default = pkgs.mkShell {
         inherit (self.checks.${system}.pre-commit-check) shellHook;
         buildInputs = [
-          pkgs.python3Packages.poetry
+          pkgs.poetry
           pkgs.sqlite
           devEnv
         ];
