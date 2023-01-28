@@ -18,13 +18,12 @@ Flask-SQLAlchemy = "^2.5.1"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^0.960"
-pylint = "^2.13.9"
 black = "^22.3.0"
 types-requests = "^2.27.27"
 types-PyYAML = "^6.0.7"
 SQLAlchemy = {extras = ["mypy"], version = "^1.4.36"}
-isort = "^5.10.1"
 alembic = "^1.9.1"
+ruff = "*"
 
 [tool.poetry.scripts]
 fetch-podcasts = "podcasts.fetch:main"
@@ -33,25 +32,24 @@ fetch-podcasts = "podcasts.fetch:main"
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
-[tool.isort]
-profile = "black"
-
-[tool.pylint.typecheck]
-ignored-classes = ["SQLAlchemy", "scoped_session"]
-
-[tool.pylint."messages control"]
-disable = [
-  "raw-checker-failed",
-  "bad-inline-option",
-  "locally-disabled",
-  "file-ignored",
-  "suppressed-message",
-  "useless-suppression",
-  "deprecated-pragma",
-  "use-symbolic-message-instead",
-  "missing-module-docstring",
-  "missing-class-docstring",
-  "missing-function-docstring",
-  "invalid-name",
-  "too-few-public-methods"
+[tool.ruff]
+select = [
+  "E",
+  "F",
+  "W",
+  "I",
+  "UP",
+  "N",
+  "ANN",
+  "S",
+  "B",
+  "C4",
+  "SIM",
+  "ARG",
+]
+target-version = "py39"
+ignore = [
+  "E501", # line too long
+  "ANN101", # annotate self
+  "ANN102", # annotate cls
 ]

@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import Optional
 from urllib.parse import urlparse
 
-from flask import abort, make_response, render_template, send_from_directory, Response
+from flask import Response, abort, make_response, render_template, send_from_directory
 from flask_httpauth import HTTPBasicAuth
 from werkzeug.security import check_password_hash
 
@@ -41,7 +41,7 @@ def home() -> Response:
 
 
 @app.route("/show/<slug>")
-def show(slug: str):
+def show(slug: str) -> str:
     podcast = PodcastDb.query.filter_by(slug=slug).first()
     if not podcast:
         abort(404)

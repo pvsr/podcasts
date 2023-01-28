@@ -23,7 +23,8 @@ class Config:
     _instance: Optional["Config"] = None
 
     @classmethod
-    def load(cls, data_dir: Path = Path(".")) -> "Config":
+    def load(cls, data_dir: Optional[Path] = None) -> "Config":
+        data_dir = data_dir or Path(".")
         if not cls._instance:
             cls._instance = open_config(data_dir)
         return cls._instance

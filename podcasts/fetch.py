@@ -187,7 +187,7 @@ def download_feed(
         return None
 
     print(f"{podcast.slug}: downloading")
-    r = requests.get(podcast.url)
+    r = requests.get(podcast.url, timeout=20)
     if r.status_code != 200:
         print(f"{podcast.slug}: failed")
         return None

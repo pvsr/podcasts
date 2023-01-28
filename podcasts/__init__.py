@@ -1,6 +1,5 @@
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
@@ -50,7 +49,7 @@ class EpisodeDb(db.Model):
 
     podcast = db.relationship("PodcastDb", back_populates="episodes")
 
-    def href(self, archived: bool):
+    def href(self, archived: bool) -> str:
         return f"/{self.podcast_slug}/{self.id}.mp3" if archived else self.enclosure
 
 
