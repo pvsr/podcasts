@@ -5,3 +5,7 @@ runs
 *.csv
 .direnv
 .pre-commit-config.yaml
+podcasts.sqlite
+podcasts.yml
+result
+*.rss
