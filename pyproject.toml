@@ -19,6 +19,7 @@ Flask-SQLAlchemy = "^2.5.1"
 [tool.poetry.group.dev.dependencies]
 types-requests = "^2.27.27"
 types-PyYAML = "^6.0.7"
+flask-httpauth-stubs = "^0.1.5"
 SQLAlchemy = {extras = ["mypy"], version = "^1.4.36"}
 alembic = "^1.9.1"
 mypy = "*"

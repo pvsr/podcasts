@@ -39,5 +39,5 @@ def open_config(data_dir: Path) -> Config:
         )
 
 
-def to_podcasts(slug_to_url: dict) -> list[Podcast]:
+def to_podcasts(slug_to_url: dict[str, str]) -> list[Podcast]:
     return [Podcast(*podcast) for podcast in slug_to_url.items()]

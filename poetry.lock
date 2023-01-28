@@ -273,6 +273,23 @@ files = [
 flask = "*"
 
 [[package]]
+name = "flask-httpauth-stubs"
+version = "0.1.5"
+description = "Mypy plugin and stubs for Flask-HTTPAuth"
+category = "dev"
+optional = false
+python-versions = "*"
+files = [
+    {file = "Flask-HTTPAuth-stubs-0.1.5.tar.gz", hash = "sha256:01656a4bb68a748943282c53d3f7b8efe115d9160f41592041d0137513fce772"},
+    {file = "Flask_HTTPAuth_stubs-0.1.5-py3-none-any.whl", hash = "sha256:cfafcd070bf5090b9b0119656bcfb17e4d3153307ce44f06594ce0aea30f2ebe"},
+]
+
+[package.dependencies]
+Flask-HTTPAuth = ">=4.0.0"
+mypy = ">=0.720"
+typing-extensions = ">=3.7.4"
+
+[[package]]
 name = "flask-sqlalchemy"
 version = "2.5.1"
 description = "Adds SQLAlchemy support to your Flask application."
@@ -1180,4 +1197,4 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "85dd063b01da0e43a4d06e92cda316eb2d873b7bcfd087db1840e77ec12c0087"
+content-hash = "01dc57005da39c461c6261b78580d901d32c08e95a8585bc4c3198d9c4c1f363"

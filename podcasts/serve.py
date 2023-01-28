@@ -12,10 +12,10 @@ auth = HTTPBasicAuth()
 
 
 @auth.verify_password
-def verify_password(username: str, password: str) -> Optional[tuple[str, str]]:
+def verify_password(username: str, password: str) -> Optional[str]:
     user = UserDb.query.filter_by(name=username).first()
     if user and check_password_hash(user.password, password):
-        return (username, password)
+        return f"{username}:{password}"
     return None
 
 
@@ -24,8 +24,7 @@ def verify_password(username: str, password: str) -> Optional[tuple[str, str]]:
 @auth.login_required
 def home() -> Response:
     podcasts = PodcastDb.query.order_by(db.desc(PodcastDb.last_ep)).all()
-    username, password = auth.current_user()
-    login = f"{username}:{password}"
+    login = auth.current_user() or ""
     base_url = urlparse(app.config.get("DOMAIN", ""))
     last_podcast = max(podcasts, key=lambda p: p.last_fetch)
     resp = make_response(
