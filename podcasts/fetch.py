@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 from operator import attrgetter
 from pathlib import Path
 from subprocess import run
-from typing import Any, Optional, cast
+from typing import Any, cast
 
 import feedparser
 import requests
@@ -31,12 +31,12 @@ class ParsedFeed:
 class FeedData:
     slug: str
     raw: str
-    url: Optional[str]
+    url: str | None
     parsed: ParsedFeed
     last_ep: datetime
 
     @classmethod
-    def parse(cls, slug: str, raw: str, url: Optional[str]) -> Optional["FeedData"]:
+    def parse(cls, slug: str, raw: str, url: str | None) -> "FeedData" | None:
         parsed = cast(ParsedFeed, feedparser.parse(raw))
         if len(parsed.entries) == 0:
             return None
@@ -147,8 +147,8 @@ async def fetch_feeds() -> None:
 
 
 def process_feed(
-    podcast: Podcast, old_eps: int, last_fetch: Optional[datetime]
-) -> Optional[FeedData]:
+    podcast: Podcast, old_eps: int, last_fetch: datetime | None
+) -> FeedData | None:
     feed = download_feed(podcast, last_fetch)
     if not feed:
         return None
@@ -180,8 +180,8 @@ def process_feed(
 
 
 def download_feed(
-    podcast: Podcast, last_fetch: Optional[datetime], url: Optional[str] = None
-) -> Optional[FeedData]:
+    podcast: Podcast, last_fetch: datetime | None, url: str | None = None
+) -> FeedData | None:
     if last_fetch and datetime.now() - last_fetch < timedelta(hours=1):
         print(f"{podcast.slug}: fetched in last hour, continuing")
         return None
@@ -210,7 +210,7 @@ def update_feed(slug: str, feed: FeedData) -> bool:
     return True
 
 
-def relink(slug: str, feed: FeedData) -> Optional[str]:
+def relink(slug: str, feed: FeedData) -> str | None:
     replacements = {}
     for entry in feed.parsed.entries:
         if not entry.guid:

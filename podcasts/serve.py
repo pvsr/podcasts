@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Optional
 from urllib.parse import urlparse
 
 from flask import Response, abort, make_response, render_template, send_from_directory
@@ -12,7 +11,7 @@ auth = HTTPBasicAuth()
 
 
 @auth.verify_password
-def verify_password(username: str, password: str) -> Optional[str]:
+def verify_password(username: str, password: str) -> str | None:
     user = UserDb.query.filter_by(name=username).first()
     if user and check_password_hash(user.password, password):
         return f"{username}:{password}"

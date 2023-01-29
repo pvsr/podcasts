@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
 
 import dacite
 import yaml
@@ -20,10 +19,10 @@ class Config:
     tags_to_strip: list[str]
     podcasts: list[Podcast]
     passthru: list[Podcast]
-    _instance: Optional["Config"] = None
+    _instance: "Config" | None = None
 
     @classmethod
-    def load(cls, data_dir: Optional[Path] = None) -> "Config":
+    def load(cls, data_dir: Path | None = None) -> "Config":
         data_dir = data_dir or Path(".")
         if not cls._instance:
             cls._instance = open_config(data_dir)
