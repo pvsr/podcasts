@@ -284,9 +284,10 @@ def to_datetime(t: time.struct_time) -> datetime:
 
 def main() -> None:
     Config.load(Path(app.config.get("DATA_DIR", "")))
-    db.create_all()
-    asyncio.run(fetch_feeds())
-    db.session.commit()
+    with app.app_context():
+        db.create_all()
+        asyncio.run(fetch_feeds())
+        db.session.commit()
     run(["git-annex", "status"], check=False)
 
 
