@@ -29,6 +29,7 @@ python-lsp-server = "*"
 pylsp-mypy = "*"
 python-lsp-black = "*"
 python-lsp-ruff = "*"
+gunicorn = "^20.1.0"
 
 [tool.poetry.scripts]
 fetch-podcasts = "podcasts.fetch:main"
