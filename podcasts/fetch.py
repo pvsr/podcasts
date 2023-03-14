@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 from operator import attrgetter
 from pathlib import Path
 from subprocess import run
-from typing import Any, cast
+from typing import Any, Optional, cast
 
 import feedparser
 import requests
@@ -36,7 +36,7 @@ class FeedData:
     last_ep: datetime
 
     @classmethod
-    def parse(cls, slug: str, raw: str, url: str | None) -> "FeedData" | None:
+    def parse(cls, slug: str, raw: str, url: str | None) -> Optional["FeedData"]:
         parsed = cast(ParsedFeed, feedparser.parse(raw))
         if len(parsed.entries) == 0:
             return None
