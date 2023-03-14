@@ -57,27 +57,28 @@ async def fetch_feeds() -> None:
     config = Config.load()
     os.chdir(annex_dir)
 
-    last = {
-        row.slug: {
-            "old_eps": row.eps,
-            "last_fetch": datetime.fromisoformat(row.last_fetch),
-        }
-        for row in db.session.execute(
-            text(
-                """
-                select p.slug, p.last_fetch, count(*) as eps
-                from episode e inner join podcast p on e.podcast_slug = p.slug
-                group by podcast_slug"""
-            )
+    rows = db.session.execute(
+        text(
+            """
+            select e.id, p.slug, p.last_fetch
+            from episode e inner join podcast p on e.podcast_slug = p.slug
+            group by podcast_slug"""
         )
-    }
-    fallback_status = {"old_eps": 0, "last_fetch": None}
+    )
+
+    last_fetch: dict[str, datetime] = {}
+    old_eps: dict[str, set[str]] = {}
+    for row in rows:
+        last_fetch.setdefault(row.slug, datetime.fromisoformat(row.last_fetch))
+        old_eps.setdefault(row.slug, set()).add(row.id)
+
     parsed_feeds = await asyncio.gather(
         *[
             asyncio.to_thread(
                 process_feed,
                 podcast,
-                **last.get(podcast.slug, fallback_status),
+                old_eps.get(podcast.slug, set()),
+                last_fetch.get(podcast.slug, None),
             )
             for podcast in config.podcasts
         ]
@@ -86,7 +87,7 @@ async def fetch_feeds() -> None:
             asyncio.to_thread(
                 download_feed,
                 podcast,
-                last.get(podcast.slug, fallback_status)["last_fetch"],
+                last_fetch.get(podcast.slug, None),
                 podcast.url,
             )
             for podcast in config.passthru
@@ -99,7 +100,7 @@ async def fetch_feeds() -> None:
     )
     if len(feeds) == 0:
         return
-    last_fetch = datetime.now()
+    now = datetime.now()
     podcasts = [
         PodcastDb(
             slug=feed.slug,
@@ -107,7 +108,7 @@ async def fetch_feeds() -> None:
             image=feed.parsed.feed.image.href,
             image_title=feed.parsed.feed.image.title,
             last_ep=feed.last_ep,
-            last_fetch=last_fetch,
+            last_fetch=now,
             url=feed.url,
             episodes=[
                 EpisodeDb(
@@ -147,18 +148,19 @@ async def fetch_feeds() -> None:
 
 
 def process_feed(
-    podcast: Podcast, old_eps: int, last_fetch: datetime | None
+    podcast: Podcast, old_eps: set[str], last_fetch: datetime | None
 ) -> FeedData | None:
     feed = download_feed(podcast, last_fetch)
     if not feed:
         return None
 
-    new_eps = len(feed.parsed.entries)
-    if len(feed.parsed.entries) <= old_eps:
-        print(
-            f"{podcast.slug}: we have {old_eps} while remote has {new_eps}, skipping import"
-        )
+    new_eps = {ep.id for ep in feed.parsed.entries}
+    if len(old_eps - new_eps) == 0:
+        print(f"{podcast.slug}: no new episodes, skipping import")
+    elif len(new_eps - old_eps) > 0:
+        print(f"{podcast.slug}: existing episodes are missing, skipping import")
     else:
+        print(f"{podcast.slug}: new episodes: {[e.title for e in new_eps]}")
         print(f"{podcast.slug}: annexing {podcast.url}")
         annex_cmd = run(
             [
