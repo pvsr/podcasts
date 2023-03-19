@@ -4,6 +4,7 @@ import os
 import string
 import time
 import xml.dom.minidom
+from collections import defaultdict
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from operator import attrgetter
@@ -62,22 +63,26 @@ async def fetch_feeds() -> None:
             """
             select e.id, p.slug, p.last_fetch
             from episode e inner join podcast p on e.podcast_slug = p.slug
+            where p.url is null
             group by podcast_slug"""
         )
     )
 
+    present = {f"{e.parent.name}/{e.stem}" for e in Path(annex_dir).glob("*/*")}
+
     last_fetch: dict[str, datetime] = {}
-    old_eps: dict[str, set[str]] = {}
+    old_eps: dict[str, set[str]] = defaultdict(set)
     for row in rows:
         last_fetch.setdefault(row.slug, datetime.fromisoformat(row.last_fetch))
-        old_eps.setdefault(row.slug, set()).add(row.id)
+        if f"{row.slug}/{git_annex_sanitize_filename(row.id)}" in present:
+            old_eps[row.slug].add(row.id)
 
     parsed_feeds = await asyncio.gather(
         *[
             asyncio.to_thread(
                 process_feed,
                 podcast,
-                old_eps.get(podcast.slug, set()),
+                old_eps[podcast.slug],
                 last_fetch.get(podcast.slug, None),
             )
             for podcast in config.podcasts
@@ -87,7 +92,7 @@ async def fetch_feeds() -> None:
             asyncio.to_thread(
                 download_feed,
                 podcast,
-                last_fetch.get(podcast.slug, None),
+                max(last_fetch.values()),
                 podcast.url,
             )
             for podcast in config.passthru
