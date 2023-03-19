@@ -154,13 +154,14 @@ def process_feed(
     if not feed:
         return None
 
-    new_eps = {ep.id for ep in feed.parsed.entries}
-    if len(old_eps - new_eps) == 0:
+    feed_eps = {ep.id for ep in feed.parsed.entries}
+    new_eps = feed_eps - old_eps
+    if len(new_eps) == 0:
         print(f"{podcast.slug}: no new episodes, skipping import")
-    elif len(new_eps - old_eps) > 0:
+    elif len(old_eps - feed_eps) > 0:
         print(f"{podcast.slug}: existing episodes are missing, skipping import")
     else:
-        print(f"{podcast.slug}: new episodes: {[e.title for e in new_eps]}")
+        print(f"{podcast.slug}: new episodes: {new_eps}")
         print(f"{podcast.slug}: annexing {podcast.url}")
         annex_cmd = run(
             [
