@@ -63,8 +63,7 @@ async def fetch_feeds() -> None:
             """
             select e.id, p.slug, p.last_fetch
             from episode e inner join podcast p on e.podcast_slug = p.slug
-            where p.url is null
-            group by podcast_slug"""
+            where p.url is null"""
         )
     )
 
