@@ -215,6 +215,7 @@ def update_feed(slug: str, feed: FeedData) -> bool:
     print(f"{slug}: saving modified to {updated}")
     with open(updated, "w", encoding="utf-8") as f:
         print(pretty_rss(relinked), file=f)
+    run(["git", "add", updated], check=False)
     return True
 
 
