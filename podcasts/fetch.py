@@ -85,8 +85,7 @@ async def fetch_feeds() -> None:
                 last_fetch.get(podcast.slug, None),
             )
             for podcast in config.podcasts
-        ]
-    ) + await asyncio.gather(
+        ],
         *[
             asyncio.to_thread(
                 download_feed,
@@ -95,7 +94,7 @@ async def fetch_feeds() -> None:
                 podcast.url,
             )
             for podcast in config.passthru
-        ]
+        ],
     )
     feeds = sorted(
         filter(None, parsed_feeds),
