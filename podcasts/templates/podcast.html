@@ -18,6 +18,7 @@
           <p><a href="{{ auth_url }}/{{ podcast.slug }}.rss">RSS feed</a></p>
           {% endif %}
           {% if episodes %}
+          <h3>Episodes</h3>
           <ul>
             {% for episode in episodes %}
             <li><a href="{{ episode.href(not podcast.url) }}">{{ episode.title }}</a></li>
