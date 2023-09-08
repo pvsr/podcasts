@@ -39,6 +39,7 @@ def home() -> Response:
 
 
 @app.route("/show/<slug>")
+@auth.login_required
 def show(slug: str) -> str:
     podcast = PodcastDb.query.filter_by(slug=slug).first()
     if not podcast:
