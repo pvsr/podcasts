@@ -49,7 +49,14 @@ def show(slug: str) -> str:
         .order_by(EpisodeDb.published.asc())
         .all()
     )
-    return render_template("podcast.html", podcast=podcast, episodes=episodes)
+    login = auth.current_user() or ""
+    base_url = urlparse(app.config.get("DOMAIN", ""))
+    return render_template(
+        "podcast.html",
+        podcast=podcast,
+        episodes=episodes,
+        auth_url=base_url._replace(netloc=f"{login}@{base_url.netloc}").geturl(),
+    )
 
 
 @app.route("/<path:path>")
