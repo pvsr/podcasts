@@ -195,7 +195,7 @@ def download_feed(
     print(f"{podcast.slug}: downloading")
     r = requests.get(podcast.url, timeout=20)
     if r.status_code != 200:
-        print(f"{podcast.slug}: failed")
+        print(f"{podcast.slug}: failed with status code {r.status_code}")
         return None
     if getattr(r, "from_cache", False):
         print(f"{podcast.slug}: cache hit")
