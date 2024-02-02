@@ -1,6 +1,9 @@
 {
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    poetry2nix.url = "github:nix-community/poetry2nix";
+    poetry2nix.inputs.nixpkgs.follows = "nixpkgs";
+    poetry2nix.inputs.flake-utils.follows = "utils";
     utils.url = "github:numtide/flake-utils";
     pre-commit-hooks.url = "github:cachix/pre-commit-hooks.nix";
   };
@@ -8,12 +11,14 @@
   outputs = {
     self,
     nixpkgs,
+    poetry2nix,
     utils,
     pre-commit-hooks,
   }: let
     out = system: let
       pkgs = nixpkgs.legacyPackages."${system}";
-      devEnv = pkgs.poetry2nix.mkPoetryEnv {
+      inherit (poetry2nix.lib.mkPoetry2Nix {inherit pkgs;}) mkPoetryApplication mkPoetryEnv;
+      devEnv = mkPoetryEnv {
         projectDir = ./.;
         preferWheels = true;
       };
@@ -27,7 +32,7 @@
         ];
       };
 
-      packages.default = pkgs.poetry2nix.mkPoetryApplication {
+      packages.default = mkPoetryApplication {
         projectDir = ./.;
         preferWheels = true;
       };
