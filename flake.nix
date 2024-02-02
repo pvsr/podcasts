@@ -75,7 +75,10 @@
             RemoveIPC = true;
             NoNewPrivileges = true;
             ProtectSystem = "strict";
-            ProtectHome = "read-only";
+            ProtectHome =
+              if lib.hasPrefix "/home" podcastDir
+              then "tmpfs"
+              else "true";
             RestrictSUIDSGID = true;
           };
           environment = {
