@@ -1,9 +1,6 @@
 {
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    poetry2nix.url = "github:nix-community/poetry2nix";
-    poetry2nix.inputs.nixpkgs.follows = "nixpkgs";
-    poetry2nix.inputs.flake-utils.follows = "utils";
     utils.url = "github:numtide/flake-utils";
     pre-commit-hooks.url = "github:cachix/pre-commit-hooks.nix";
   };
@@ -11,31 +8,32 @@
   outputs = {
     self,
     nixpkgs,
-    poetry2nix,
     utils,
     pre-commit-hooks,
   }: let
     out = system: let
       pkgs = nixpkgs.legacyPackages."${system}";
-      inherit (poetry2nix.lib.mkPoetry2Nix {inherit pkgs;}) mkPoetryApplication mkPoetryEnv;
-      devEnv = mkPoetryEnv {
-        projectDir = ./.;
-        preferWheels = true;
-      };
     in rec {
       devShells.default = pkgs.mkShell {
         inherit (self.checks.${system}.pre-commit-check) shellHook;
-        buildInputs = [
-          pkgs.poetry
-          pkgs.sqlite
-          devEnv
+        inputsFrom = [packages.default];
+        buildInputs = with pkgs; [
+          sqlite
+          ruff
+          (python3.withPackages (ps:
+            with ps; [
+              mypy
+              types-requests
+              types-pyyaml
+              alembic
+              gunicorn
+
+              pylsp-mypy
+            ]))
         ];
       };
 
-      packages.default = mkPoetryApplication {
-        projectDir = ./.;
-        preferWheels = true;
-      };
+      packages.default = import ./. {inherit pkgs;};
 
       apps.default = utils.lib.mkApp {
         drv = packages.default;
@@ -70,7 +68,6 @@
         }: let
           cfg = config.services.podcasts;
           podcasts = self.outputs.packages."${pkgs.system}".default;
-          penv = podcasts.dependencyEnv;
           stateDirectory = "/var/lib/podcasts/";
           podcastDir = "${cfg.annexDir}/${cfg.podcastSubdir}";
           commonServiceConfig = {
@@ -162,13 +159,13 @@
                   Group = cfg.serve.group;
                   BindReadOnlyPaths = [podcastDir cfg.dataDir];
                   ExecStart = ''
-                    ${pkgs.python3Packages.gunicorn}/bin/gunicorn -b ${cfg.serve.bind} podcasts.serve:app
+                    ${podcasts.python.pkgs.gunicorn}/bin/gunicorn -b ${cfg.serve.bind} podcasts.serve:app
                   '';
                 };
               environment =
                 environment
                 // {
-                  PYTHONPATH = "${penv}/${penv.sitePackages}";
+                  PYTHONPATH = "${podcasts.python.pkgs.makePythonPath podcasts.propagatedBuildInputs}:${podcasts.outPath}/${podcasts.python.sitePackages}";
                 };
               wantedBy = ["multi-user.target"];
               after = ["network.target"] ++ lib.optional cfg.fetch.enable "fetch-podcasts.timer";

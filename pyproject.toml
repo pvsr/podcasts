@@ -1,43 +1,33 @@
-[tool.poetry]
+[project]
 name = "podcasts"
 version = "0.1.0"
 description = ""
-authors = ["Peter Rice <peter@peterrice.xyz>"]
-license = "AGPL-3.0-or-later"
+authors = [{ name = "Peter Rice", email = "peter@peterrice.xyz" }]
+license = { file = "LICENSE" }
+requires-python = ">= 3.10"
+dependencies = [
+  "requests",
+  "feedparser",
+  "PyYAML",
+  "dacite",
+  "SQLAlchemy",
+  "Flask",
+  "Flask-HTTPAuth",
+  "Flask-SQLAlchemy"
+]
 
-[tool.poetry.dependencies]
-python = "^3.10"
-requests = "^2.27.1"
-feedparser = "^6.0.10"
-PyYAML = "^6.0"
-SQLAlchemy = {extras = ["sqlite"], version = "^2"}
-Flask = "^2.1.2"
-dacite = "^1.6.0"
-Flask-HTTPAuth = "^4.7.0"
-Flask-SQLAlchemy = "^3"
-
-[tool.poetry.group.dev.dependencies]
-types-requests = "^2.27.27"
-types-PyYAML = "^6.0.7"
-flask-httpauth-stubs = "^0.1.5"
-SQLAlchemy = {extras = ["sqlite", "mypy"], version = "^2"}
-alembic = "^1.9.1"
-mypy = "*"
-black = "*"
-ruff = "*"
-python-lsp-server = "*"
-pylsp-mypy = "*"
-python-lsp-black = "*"
-python-lsp-ruff = "*"
-gunicorn = "^20.1.0"
-types-flask-sqlalchemy = "^2.5.9.1"
-
-[tool.poetry.scripts]
+[project.scripts]
 fetch-podcasts = "podcasts.fetch:main"
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["podcasts"]
+
+[tool.setuptools.package-data]
+podcasts = ["static/*", "templates/*"]
 
 [tool.ruff]
 select = [
