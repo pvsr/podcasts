@@ -1,7 +1,6 @@
 import asyncio
 import html
 import os
-import string
 import time
 import xml.dom.minidom
 from collections import defaultdict
@@ -17,7 +16,7 @@ import requests
 from sqlalchemy import text
 from sqlalchemy.dialects.sqlite import insert
 
-from podcasts import EpisodeDb, PodcastDb, app, db
+from podcasts import EpisodeDb, PodcastDb, app, db, git_annex_sanitize_filename
 from podcasts.config import Config, Podcast
 
 
@@ -234,44 +233,6 @@ def relink(slug: str, feed: FeedData) -> str | None:
         # print(f"replacing {old} with {new}")
         raw = raw.replace(html.escape(old), new)
     return raw
-
-
-def git_annex_sanitize_filename(filename: str) -> str:
-    if not filename:
-        return filename
-    return "".join(sanitize_char(c) for c in filename)
-
-
-def sanitize_char(char: str) -> str:
-    # todo
-    if char in [".", "-"]:
-        return char
-    if char in string.punctuation or char in string.whitespace:
-        return "_"
-    return char
-
-
-# sanitizeFilePath :: String -> FilePath
-# sanitizeFilePath = sanitizeLeadingFilePathCharacter . sanitizeFilePathComponent
-
-# {- For when the filepath is being built up out of components that should be
-#  - individually sanitized, this can be used for each component, followed by
-#  - sanitizeLeadingFilePathCharacter for the whole thing.
-#  -}
-# sanitizeFilePathComponent :: String -> String
-# sanitizeFilePathComponent = map sanitize
-#   where
-# 	sanitize c
-# 		| c == '.' || c == '-' = c
-# 		| isSpace c || isPunctuation c || isSymbol c || isControl c || c == '/' = '_'
-# 		| otherwise = c
-
-# sanitizeLeadingFilePathCharacter :: String -> FilePath
-# sanitizeLeadingFilePathCharacter [] = "file"
-# sanitizeLeadingFilePathCharacter ('.':s) = '_':s
-# sanitizeLeadingFilePathCharacter ('-':s) = '_':s
-# sanitizeLeadingFilePathCharacter ('/':s) = '_':s
-# sanitizeLeadingFilePathCharacter s = s
 
 
 def pretty_rss(raw: str) -> str:
