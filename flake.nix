@@ -29,6 +29,7 @@
               gunicorn
 
               pylsp-mypy
+              ruff-lsp
             ]))
         ];
       };

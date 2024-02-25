@@ -30,7 +30,8 @@ packages = ["podcasts"]
 podcasts = ["static/*", "templates/*"]
 
 [tool.ruff]
-select = [
+target-version = "py310"
+lint.select = [
   "E",
   "F",
   "W",
@@ -43,12 +44,16 @@ select = [
   "C4",
   "SIM",
   "ARG",
+  "PTH",
+  "RUF",
 ]
-target-version = "py310"
-ignore = [
+lint.ignore = [
   "E501", # line too long
   "ANN101", # annotate self
   "ANN102", # annotate cls
+  "S318", # don't parse arbitrary xml
+  "S603", # ban subprocess.run
+  "S607", # ban $PATH
 ]
 
 [tool.pylsp-mypy]

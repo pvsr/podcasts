@@ -24,14 +24,14 @@ class Config:
 
     @classmethod
     def load(cls, data_dir: Path | None = None) -> "Config":
-        data_dir = data_dir or Path(".")
+        data_dir = data_dir or Path()
         if not cls._instance:
             cls._instance = open_config(data_dir)
         return cls._instance
 
 
 def open_config(data_dir: Path) -> Config:
-    with open(data_dir / "podcasts.yml", encoding="utf-8") as f:
+    with (data_dir / "podcasts.yml").open(encoding="utf-8") as f:
         return dacite.from_dict(
             Config,
             yaml.safe_load(f),

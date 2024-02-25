@@ -120,9 +120,9 @@ async def fetch_feeds() -> None:
                     description=ep.description,
                     published=to_datetime(ep.published_parsed),
                     link=ep.get("link"),
-                    enclosure=[link.href for link in ep.links if "audio" in link.type][
-                        0
-                    ],
+                    enclosure=next(
+                        link.href for link in ep.links if "audio" in link.type
+                    ),
                 )
                 for ep in feed.parsed.entries
             ],
@@ -210,7 +210,7 @@ def update_feed(slug: str, feed: FeedData) -> bool:
         return False
 
     print(f"{slug}: saving modified to {updated}")
-    with open(updated, "w", encoding="utf-8") as f:
+    with updated.open("w", encoding="utf-8") as f:
         print(pretty_rss(relinked), file=f)
     run(["git", "add", updated], check=False)
     return True
