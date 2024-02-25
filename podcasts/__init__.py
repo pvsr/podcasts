@@ -4,6 +4,8 @@ from pathlib import Path
 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import DateTime, ForeignKey, String
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 app = Flask(__name__)
 app.config.from_prefixed_env("PODCASTS")
@@ -11,44 +13,50 @@ app.config.update(
     SQLALCHEMY_TRACK_MODIFICATIONS=False,
     SQLALCHEMY_DATABASE_URI=f'sqlite:///{Path(app.config.get("DATA_DIR", ""))/"podcasts.sqlite"}',
 )
-db = SQLAlchemy(app)
+
+
+class Base(DeclarativeBase):
+    pass
+
+
+db = SQLAlchemy(app, model_class=Base)
 
 
 class PodcastDb(db.Model):
     __tablename__ = "podcast"
-    slug = db.Column(db.String, primary_key=True, nullable=False)
-    title = db.Column(db.String, nullable=False)
-    image = db.Column(db.String, nullable=False)
-    image_title = db.Column(db.String, nullable=False)
-    last_ep = db.Column(db.DateTime, nullable=False)
-    last_fetch = db.Column(db.DateTime, nullable=True)
-    url = db.Column(db.String, nullable=True)
-
-    episodes = db.relationship("EpisodeDb", back_populates="podcast")
+    slug: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    title: Mapped[str] = mapped_column(String, nullable=False)
+    image: Mapped[str] = mapped_column(String, nullable=False)
+    image_title: Mapped[str] = mapped_column(String, nullable=False)
+    last_ep: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    last_fetch: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    url: Mapped[str | None] = mapped_column(String, nullable=True)
+    episodes: Mapped[list["EpisodeDb"]] = relationship(
+        "EpisodeDb", back_populates="podcast"
+    )
 
     def last_ep_pretty(self) -> str:
         return month_day(self.last_ep)
 
     def last_fetch_pretty(self) -> str:
-        return month_day_time(self.last_fetch)
+        return month_day_time(self.last_fetch) if self.last_fetch else "never"
 
 
 class EpisodeDb(db.Model):
     __tablename__ = "episode"
-    podcast_slug = db.Column(
-        db.String,
-        db.ForeignKey("podcast.slug"),
+    podcast_slug: Mapped[str] = mapped_column(
+        String,
+        ForeignKey("podcast.slug"),
         primary_key=True,
         nullable=False,
     )
-    id = db.Column(db.String, primary_key=True, nullable=False)
-    title = db.Column(db.String, nullable=False)
-    description = db.Column(db.String, nullable=False)
-    published = db.Column(db.DateTime, nullable=False)
-    link = db.Column(db.String, nullable=True)
-    enclosure = db.Column(db.String, nullable=False)
-
-    podcast = db.relationship("PodcastDb", back_populates="episodes")
+    id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    title: Mapped[str] = mapped_column(String, nullable=False)
+    description: Mapped[str] = mapped_column(String, nullable=False)
+    published: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    link: Mapped[str | None] = mapped_column(String, nullable=True)
+    enclosure: Mapped[str] = mapped_column(String, nullable=False)
+    podcast: Mapped[PodcastDb] = relationship("PodcastDb", back_populates="episodes")
 
     def href(self, archived: bool) -> str:
         return (
@@ -60,8 +68,8 @@ class EpisodeDb(db.Model):
 
 class UserDb(db.Model):
     __tablename__ = "user"
-    name = db.Column(db.String, primary_key=True, nullable=False)
-    password = db.Column(db.String, nullable=False)
+    name: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    password: Mapped[str] = mapped_column(String, nullable=False)
 
 
 def month_day(t: datetime) -> str:
