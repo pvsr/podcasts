@@ -60,7 +60,7 @@ async def fetch_feeds() -> None:
     rows = db.session.execute(
         text(
             """
-            select e.id, p.slug, p.last_fetch
+            select e.id, e.title, p.slug, p.last_fetch
             from episode e inner join podcast p on e.podcast_slug = p.slug
             where p.url is null"""
         )
@@ -69,11 +69,11 @@ async def fetch_feeds() -> None:
     present = {f"{e.parent.name}/{e.stem}" for e in Path(annex_dir).glob("*/*")}
 
     last_fetch: dict[str, datetime] = {}
-    old_eps: dict[str, set[str]] = defaultdict(set)
+    old_eps: dict[str, dict[str, str]] = defaultdict(dict)
     for row in rows:
         last_fetch.setdefault(row.slug, datetime.fromisoformat(row.last_fetch))
         if f"{row.slug}/{git_annex_sanitize_filename(row.id)}" in present:
-            old_eps[row.slug].add(row.id)
+            old_eps[row.slug][row.id] = row.title
 
     parsed_feeds = await asyncio.gather(
         *[
@@ -150,37 +150,45 @@ async def fetch_feeds() -> None:
 
 
 def process_feed(
-    podcast: Podcast, old_eps: set[str], last_fetch: datetime | None
+    podcast: Podcast, old_eps: dict[str, str], last_fetch: datetime | None
 ) -> FeedData | None:
     feed = download_feed(podcast, last_fetch)
     if not feed:
         return None
 
-    feed_eps = {ep.id for ep in feed.parsed.entries}
-    new_eps = feed_eps - old_eps
-    if len(new_eps) == 0:
+    feed_eps = {str(ep.id): ep.title for ep in feed.parsed.entries}
+    new_titles = [str(title) for (id, title) in feed_eps.items() if id not in old_eps]
+    missing_eps = {id: title for (id, title) in old_eps.items() if id not in feed_eps}
+
+    if len(new_titles) == 0:
         print(f"{podcast.slug}: no new episodes, skipping import")
-    elif len(old_eps - feed_eps) > 0:
-        print(f"{podcast.slug}: existing episodes are missing, skipping import")
-    else:
-        print(f"{podcast.slug}: new episodes: {new_eps}")
-        print(f"{podcast.slug}: annexing {podcast.url}")
-        annex_cmd = run(
-            [
-                "git-annex",
-                "importfeed",
-                podcast.url,
-                "--template",
-                f"{podcast.slug}/{FILENAME_TEMPLATE}",
-                # "--fast",
-                # "--force",
-            ],
-            check=False,
+        return feed
+
+    print(f"{podcast.slug}: new episodes: {new_titles}")
+
+    if len(missing_eps) > 0:
+        print(
+            f"{podcast.slug}: existing episodes are missing, skipping import: {missing_eps}"
         )
-        if annex_cmd.returncode != 0:
-            print(f"{podcast.slug}: failed to annex feed")
-            return None
-        update_feed(podcast.slug, feed)
+        return feed
+
+    print(f"{podcast.slug}: annexing {podcast.url}")
+    annex_cmd = run(
+        [
+            "git-annex",
+            "importfeed",
+            podcast.url,
+            "--template",
+            f"{podcast.slug}/{FILENAME_TEMPLATE}",
+            # "--fast",
+            # "--force",
+        ],
+        check=False,
+    )
+    if annex_cmd.returncode != 0:
+        print(f"{podcast.slug}: failed to annex feed")
+        return None
+    update_feed(podcast.slug, feed)
     return feed
 
 
