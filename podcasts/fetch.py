@@ -180,6 +180,7 @@ def process_feed(
             podcast.url,
             "--template",
             f"{podcast.slug}/{FILENAME_TEMPLATE}",
+            "--relaxed",
             # "--fast",
             # "--force",
         ],
@@ -264,7 +265,7 @@ def main() -> None:
         db.create_all()
         asyncio.run(fetch_feeds())
         db.session.commit()
-    run(["git-annex", "status"], check=False)
+    run(["git-annex", "get", "."], check=False)
 
 
 if __name__ == "__main__":
