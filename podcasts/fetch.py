@@ -51,6 +51,8 @@ class FeedData:
 
 FILENAME_TEMPLATE = "${itemid}${extension}"
 
+ENV = {"GIT_CONFIG_GLOBAL": "/dev/null"}
+
 
 async def fetch_feeds() -> None:
     annex_dir = Path(app.config.get("ANNEX_DIR", ""))
@@ -185,6 +187,7 @@ def process_feed(
             # "--force",
         ],
         check=False,
+        env=ENV,
     )
     if annex_cmd.returncode != 0:
         print(f"{podcast.slug}: failed to annex feed")
@@ -221,7 +224,7 @@ def update_feed(slug: str, feed: FeedData) -> bool:
     print(f"{slug}: saving modified to {updated}")
     with updated.open("w", encoding="utf-8") as f:
         print(pretty_rss(relinked), file=f)
-    run(["git", "add", updated], check=False)
+    run(["git", "add", updated], check=False, env=ENV)
     return True
 
 
@@ -265,7 +268,7 @@ def main() -> None:
         db.create_all()
         asyncio.run(fetch_feeds())
         db.session.commit()
-    run(["git-annex", "get", "."], check=False)
+    run(["git-annex", "get", "."], check=False, env=ENV)
 
 
 if __name__ == "__main__":
