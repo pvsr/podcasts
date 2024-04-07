@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
+<opml version="1.0">
+  <head>
+    <title>All podcasts from podcasts.peterrice.xyz</title>
+  </head>
+  <body>
+    <outline text="feeds">
+      {% for podcast in podcasts %}
+        {% if podcast.url %}
+        <outline type="rss" text="{{ podcast.title }}" xmlUrl="{{ podcast.url }}" />
+        {% else %}
+        <outline type="rss" text="{{ podcast.title }}" xmlUrl="{{ auth_url }}/{{ podcast.slug }}.rss" />
+        {% endif %}
+      {% endfor %}
+    </outline>
+  </body>
+</opml>

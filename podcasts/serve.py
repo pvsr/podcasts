@@ -38,6 +38,26 @@ def home() -> Response:
     return resp
 
 
+@app.route("/export")
+@auth.login_required
+def export() -> Response:
+    podcasts = PodcastDb.query.all()
+    login = auth.current_user() or ""
+    base_url = urlparse(app.config.get("DOMAIN", ""))
+    resp = make_response(
+        render_template(
+            "export.opml",
+            podcasts=podcasts,
+            auth_url=base_url._replace(netloc=f"{login}@{base_url.netloc}").geturl(),
+        )
+    )
+    resp.headers["Content-Type"] = "application/xml"
+    resp.headers[
+        "Content-Disposition"
+    ] = 'attachment; filename="podcasts_peterrice_xyz.opml"'
+    return resp
+
+
 @app.route("/show/<slug>")
 @auth.login_required
 def show(slug: str) -> str:
