@@ -133,6 +133,10 @@
                   type = types.str;
                   default = "127.0.0.1:5998";
                 };
+                timeout = mkOption {
+                  type = types.int;
+                  default = 30;
+                };
               };
             };
           };
@@ -160,7 +164,7 @@
                   Group = cfg.serve.group;
                   BindReadOnlyPaths = [podcastDir cfg.dataDir];
                   ExecStart = ''
-                    ${podcasts.python.pkgs.gunicorn}/bin/gunicorn -b ${cfg.serve.bind} podcasts.serve:app
+                    ${podcasts.python.pkgs.gunicorn}/bin/gunicorn -b ${cfg.serve.bind} -t ${toString cfg.serve.timeout} podcasts.serve:app
                   '';
                 };
               environment =
