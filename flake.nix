@@ -25,7 +25,6 @@
               mypy
               types-requests
               types-pyyaml
-              alembic
               gunicorn
 
               pylsp-mypy
