@@ -6,6 +6,7 @@ from flask_httpauth import HTTPBasicAuth
 from werkzeug.security import check_password_hash
 
 from podcasts import EpisodeDb, PodcastDb, UserDb, app, db
+from podcasts.config import Config
 
 auth = HTTPBasicAuth()
 
@@ -24,7 +25,7 @@ def verify_password(username: str, password: str) -> str | None:
 def home() -> Response:
     podcasts = PodcastDb.query.order_by(db.desc(PodcastDb.last_ep)).all()
     login = auth.current_user() or ""
-    base_url = urlparse(app.config.get("DOMAIN", ""))
+    base_url = urlparse(Config.load(Path(app.config.get("DATA_DIR", ""))).base_url)
     last_podcast = max(podcasts, key=lambda p: p.last_fetch)
     resp = make_response(
         render_template(
