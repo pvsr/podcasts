@@ -10,6 +10,7 @@ import yaml
 class Podcast:
     slug: str
     url: str
+    ordering: int
 
     def title(self) -> str:
         return self.slug.replace("-", " ").title()
@@ -41,4 +42,7 @@ def open_config(data_dir: Path) -> Config:
 
 
 def to_podcasts(slug_to_url: dict[str, str]) -> list[Podcast]:
-    return [Podcast(*podcast) for podcast in slug_to_url.items()]
+    return [
+        Podcast(*podcast, ordering=ordering)
+        for (ordering, podcast) in enumerate(slug_to_url.items())
+    ]

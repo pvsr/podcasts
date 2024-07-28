@@ -4,7 +4,7 @@ from pathlib import Path
 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import DateTime, ForeignKey, String
+from sqlalchemy import DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 app = Flask(__name__)
@@ -31,6 +31,7 @@ class PodcastDb(db.Model):
     last_ep: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     last_fetch: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     url: Mapped[str | None] = mapped_column(String, nullable=True)
+    ordering: Mapped[int] = mapped_column(Integer, nullable=False)
     episodes: Mapped[list["EpisodeDb"]] = relationship(
         "EpisodeDb", back_populates="podcast"
     )

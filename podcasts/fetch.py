@@ -29,19 +29,19 @@ class ParsedFeed:
 
 @dataclass
 class FeedData:
-    slug: str
+    podcast: Podcast
     raw: str
     url: str | None
     parsed: ParsedFeed
     last_ep: datetime
 
     @classmethod
-    def parse(cls, slug: str, raw: str, url: str | None) -> Optional["FeedData"]:
+    def parse(cls, podcast: Podcast, raw: str, url: str | None) -> Optional["FeedData"]:
         parsed = cast(ParsedFeed, feedparser.parse(raw))
         if len(parsed.entries) == 0:
             return None
         return FeedData(
-            slug,
+            podcast,
             raw,
             url,
             parsed,
@@ -89,12 +89,13 @@ async def fetch_feeds() -> None:
             asyncio.to_thread(
                 download_feed,
                 podcast,
-                max(last_fetch.values()),
+                max(last_fetch.values(), default=None),
                 podcast.url,
             )
             for podcast in config.passthru
         ],
     )
+    feeds: list[FeedData]
     feeds = sorted(
         filter(None, parsed_feeds),
         key=attrgetter("last_ep"),
@@ -103,9 +104,11 @@ async def fetch_feeds() -> None:
     if len(feeds) == 0:
         return
     now = datetime.now()
+
     podcasts = [
         PodcastDb(
-            slug=feed.slug,
+            slug=feed.podcast.slug,
+            ordering=0 if feed.url else feed.podcast.ordering,
             title=feed.parsed.feed.title,
             image=feed.parsed.feed.image.href,
             image_title=feed.parsed.feed.image.title,
@@ -114,7 +117,7 @@ async def fetch_feeds() -> None:
             url=feed.url,
             episodes=[
                 EpisodeDb(
-                    podcast_slug=feed.slug,
+                    podcast_slug=feed.podcast.slug,
                     id=ep.guid,
                     title=ep.title,
                     description=ep.description,
@@ -132,7 +135,7 @@ async def fetch_feeds() -> None:
     insert_stmt = insert(PodcastDb)
     db.session.execute(
         insert_stmt.on_conflict_do_update(
-            set_={col: insert_stmt.excluded[col] for col in ["last_ep", "last_fetch"]}
+            set_={col: insert_stmt.excluded[col] for col in ["last_ep", "last_fetch", "ordering"]}
         ),
         [vars(podcast) for podcast in podcasts],
     )
@@ -205,7 +208,7 @@ def download_feed(
     if getattr(r, "from_cache", False):
         print(f"{podcast.slug}: cache hit")
     feedtext = r.text
-    return FeedData.parse(podcast.slug, feedtext, url)
+    return FeedData.parse(podcast, feedtext, url)
 
 
 def update_feed(slug: str, feed: FeedData) -> bool:

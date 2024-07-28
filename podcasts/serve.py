@@ -1,7 +1,14 @@
 from pathlib import Path
 from urllib.parse import urlparse
 
-from flask import Response, abort, make_response, render_template, send_from_directory
+from flask import (
+    Response,
+    abort,
+    make_response,
+    render_template,
+    request,
+    send_from_directory,
+)
 from flask_httpauth import HTTPBasicAuth
 from werkzeug.security import check_password_hash
 
@@ -23,7 +30,12 @@ def verify_password(username: str, password: str) -> str | None:
 @app.route("/show/")
 @auth.login_required
 def home() -> Response:
-    podcasts = PodcastDb.query.order_by(db.desc(PodcastDb.last_ep)).all()
+    order_by = (
+        PodcastDb.last_ep
+        if request.args.get("order") == "last_episode"
+        else PodcastDb.ordering
+    )
+    podcasts = PodcastDb.query.order_by(db.desc(order_by)).all()
     login = auth.current_user() or ""
     base_url = urlparse(Config.load(Path(app.config.get("DATA_DIR", ""))).base_url)
     last_podcast = max(podcasts, key=lambda p: p.last_fetch)
@@ -67,7 +79,7 @@ def show(slug: str) -> str:
         abort(404)
     episodes = (
         EpisodeDb.query.filter_by(podcast_slug=slug)
-        .order_by(EpisodeDb.published.asc())
+        .order_by(db.desc(EpisodeDb.published))
         .all()
     )
     login = auth.current_user() or ""
