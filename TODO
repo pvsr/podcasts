@@ -1,0 +1,6 @@
+clean titles
+
+remove config file
+	slug can come from filename
+	urls can come from atom:link
+	passthru?
