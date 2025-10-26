@@ -31,9 +31,7 @@
                   types-requests
                   types-pyyaml
                   gunicorn
-
                   pylsp-mypy
-                  ruff-lsp
                 ]
               ))
             ];
