@@ -65,9 +65,9 @@ def export() -> Response:
         )
     )
     resp.headers["Content-Type"] = "application/xml"
-    resp.headers[
-        "Content-Disposition"
-    ] = f'attachment; filename="{base_url.hostname}.opml"'
+    resp.headers["Content-Disposition"] = (
+        f'attachment; filename="{base_url.hostname}.opml"'
+    )
     return resp
 
 

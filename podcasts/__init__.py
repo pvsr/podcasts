@@ -11,7 +11,7 @@ app = Flask(__name__)
 app.config.from_prefixed_env("PODCASTS")
 app.config.update(
     SQLALCHEMY_TRACK_MODIFICATIONS=False,
-    SQLALCHEMY_DATABASE_URI=f'sqlite:///{Path(app.config.get("DATA_DIR", ""))/"podcasts.sqlite"}',
+    SQLALCHEMY_DATABASE_URI=f"sqlite:///{Path(app.config.get('DATA_DIR', '')) / 'podcasts.sqlite'}",
 )
 
 

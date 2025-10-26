@@ -135,7 +135,10 @@ async def fetch_feeds() -> None:
     insert_stmt = insert(PodcastDb)
     db.session.execute(
         insert_stmt.on_conflict_do_update(
-            set_={col: insert_stmt.excluded[col] for col in ["last_ep", "last_fetch", "ordering"]}
+            set_={
+                col: insert_stmt.excluded[col]
+                for col in ["last_ep", "last_fetch", "ordering"]
+            }
         ),
         [vars(podcast) for podcast in podcasts],
     )
@@ -234,9 +237,9 @@ def relink(slug: str, feed: FeedData) -> str | None:
         for link in entry.links:
             if "audio" in link.type:
                 filename = git_annex_sanitize_filename(entry.guid)
-                replacements[
-                    link.href
-                ] = f"{Config.load().base_url}/{slug}/{filename}.mp3"
+                replacements[link.href] = (
+                    f"{Config.load().base_url}/{slug}/{filename}.mp3"
+                )
     raw = feed.raw
     for old, new in replacements.items():
         # print(f"replacing {old} with {new}")
