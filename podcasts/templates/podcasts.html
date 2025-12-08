@@ -10,7 +10,7 @@
       <div><a href="/export"><h1>Export all</h1></a></div>
       {% for podcast in podcasts %}
       <div>
-        <img src="{{ podcast.image }}" alt="{{ podcast.image_title }}">
+        <img loading="lazy" src="{{ podcast.image }}" alt="{{ podcast.image_title }}">
         <div>
           <h1>{{ podcast.title }}</h1>
           <h2>latest episode: {{ podcast.last_ep_pretty() }}</h2>
