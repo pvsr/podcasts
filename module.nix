@@ -9,7 +9,7 @@
     }:
     let
       cfg = config.services.podcasts;
-      podcasts = self.outputs.packages."${pkgs.system}".default;
+      podcasts = self.outputs.packages."${pkgs.stdenv.hostPlatform.system}".default;
       stateDirectory = "/var/lib/podcasts/";
       podcastDir = "${cfg.annexDir}/${cfg.podcastSubdir}";
       commonServiceConfig = {
