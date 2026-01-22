@@ -2,7 +2,6 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     flake-parts.url = "github:hercules-ci/flake-parts";
-    pre-commit-hooks.url = "github:cachix/pre-commit-hooks.nix";
   };
 
   outputs =
@@ -10,7 +9,6 @@
     inputs.flake-parts.lib.mkFlake { inherit inputs; } {
       imports = [
         ./module.nix
-        inputs.pre-commit-hooks.flakeModule
       ];
 
       systems = inputs.nixpkgs.lib.systems.flakeExposed;
@@ -24,10 +22,7 @@
         }:
         {
           devShells.default = pkgs.mkShell {
-            inputsFrom = [
-              self'.packages.default
-              config.pre-commit.devShell
-            ];
+            inputsFrom = [ self'.packages.default ];
             buildInputs = with pkgs; [
               sqlite
               ruff
@@ -51,14 +46,6 @@
           };
 
           formatter = pkgs.nixfmt-tree;
-          pre-commit.settings = {
-            default_stages = [ "pre-push" ];
-            hooks.nixfmt.enable = true;
-            hooks.deadnix.enable = true;
-            hooks.statix.enable = true;
-            hooks.ruff.enable = true;
-            hooks.ruff-format.enable = true;
-          };
         };
     };
 }
