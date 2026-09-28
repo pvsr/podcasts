@@ -85,7 +85,7 @@
           inherit environment;
           path = [
             pkgs.git
-            pkgs.git-annex
+            (pkgs.git-annex.overrideAttrs { doCheck = false; })
           ];
           serviceConfig = commonServiceConfig // {
             User = cfg.fetch.user;
